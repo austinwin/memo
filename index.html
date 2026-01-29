@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memo Diary</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0f766e" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>Memo Diary</h1>
+    <button id="installBtn" class="btn secondary" hidden>Add to Home Screen</button>
+  </header>
+
+  <main class="app-main">
+    <section class="memo-form-section">
+      <h2>New Memo</h2>
+      <form id="memoForm">
+        <label>
+          Title
+          <input type="text" id="title" name="title" required maxlength="100" />
+        </label>
+        <label>
+          Date & Time
+          <input type="datetime-local" id="datetime" name="datetime" />
+        </label>
+        <label>
+          Text
+          <textarea id="text" name="text" rows="5" required></textarea>
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Save Memo</button>
+          <button type="reset" class="btn">Clear</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="memo-list-section">
+      <div class="memo-list-header">
+        <h2>Your Memos</h2>
+        <select id="sortSelect" class="sort-select">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="title">Title A–Z</option>
+        </select>
+      </div>
+      <div id="memoList" class="memo-list"></div>
+    </section>
+  </main>
+
+  <template id="memoTemplate">
+    <article class="memo-card">
+      <header class="memo-card-header">
+        <div>
+          <h3 class="memo-title"></h3>
+          <p class="memo-datetime"></p>
+        </div>
+        <div class="memo-card-actions">
+          <button class="icon-btn edit-btn" title="Edit">✏️</button>
+          <button class="icon-btn delete-btn" title="Delete">🗑️</button>
+        </div>
+      </header>
+      <p class="memo-text"></p>
+    </article>
+  </template>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="app.js"></script>
+  <script src="pwa.js"></script>
+</body>
+</html>
