@@ -67,8 +67,11 @@ section {
 }
 
 h2 {
-  font-size: 1rem;
+  font-size: 0.95rem;
   margin: 0 0 0.75rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 label {
@@ -138,6 +141,13 @@ textarea {
   filter: brightness(1.05);
 }
 
+.memo-list-section {
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+  overflow: hidden;
+}
+
 .memo-list-header {
   display: flex;
   align-items: center;
@@ -154,6 +164,8 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
 }
 
 .memo-card {
@@ -187,6 +199,8 @@ textarea {
   font-size: 0.83rem;
   line-height: 1.5;
   white-space: pre-wrap;
+  max-height: 9rem;
+  overflow-y: auto;
 }
 
 .memo-card-actions {
@@ -232,5 +246,13 @@ textarea {
 
   .memo-card {
     padding: 0.7rem;
+  }
+
+  .memo-list-section {
+    max-height: none;
+  }
+
+  .memo-text {
+    max-height: 12rem;
   }
 }
