@@ -1,4 +1,4 @@
-# Memo Diary
+# Memo Diary (dev by moltbot)
 
 A minimal, offline-first memo diary Progressive Web App (PWA).
 
