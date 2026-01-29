@@ -221,6 +221,23 @@ textarea {
   background: rgba(31,41,55,0.95);
 }
 
+/* Minimal, subtle scrollbar styling for WebKit browsers (iOS, Chrome, Safari) */
+.memo-list::-webkit-scrollbar,
+.memo-text::-webkit-scrollbar {
+  width: 6px;
+}
+
+.memo-list::-webkit-scrollbar-track,
+.memo-text::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.memo-list::-webkit-scrollbar-thumb,
+.memo-text::-webkit-scrollbar-thumb {
+  background: rgba(148,163,184,0.4);
+  border-radius: 999px;
+}
+
 .toast {
   position: fixed;
   left: 50%;
