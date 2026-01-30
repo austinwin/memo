@@ -24,6 +24,7 @@ const memoTemplate = document.getElementById('memoTemplate');
 const exportBtn = document.getElementById('exportBtn');
 const importBtn = document.getElementById('importBtn');
 const importInput = document.getElementById('importInput');
+const mapHeaderBtn = document.getElementById('mapHeaderBtn');
 const locationSummaryEl = document.getElementById('locationSummary');
 
 function showToast(message) {
@@ -682,6 +683,16 @@ function init() {
 
   if (exportBtn) {
     exportBtn.addEventListener('click', exportMemosToFile);
+  }
+
+  if (mapHeaderBtn) {
+    mapHeaderBtn.addEventListener('click', () => {
+      activeTab = 'map';
+      document.querySelectorAll('.memo-tab').forEach((b) => {
+        b.classList.toggle('active', b.getAttribute('data-tab') === 'map');
+      });
+      renderMemos();
+    });
   }
 
   if (window.memoLocation) {
