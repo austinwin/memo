@@ -43,6 +43,14 @@
           Text
           <textarea id="text" name="text" rows="5" required placeholder="What stood out about today?"></textarea>
         </label>
+        <label class="todo-toggle">
+          <span class="todo-toggle-label">Task</span>
+          <span class="todo-toggle-help">Treat this memo as a to‑do you want to track.</span>
+          <div class="todo-toggle-control">
+            <input type="checkbox" id="isTodo" name="isTodo" />
+            <span>Track as task</span>
+          </div>
+        </label>
         <div class="form-location-row">
           <button type="button" id="locationBtn" class="btn secondary">Add location</button>
           <p id="locationSummary" class="location-summary" hidden></p>
@@ -69,6 +77,7 @@
             <button class="memo-tab active" data-tab="all" type="button">All</button>
             <button class="memo-tab" data-tab="today" type="button">Today</button>
             <button class="memo-tab" data-tab="pinned" type="button">Pinned</button>
+            <button class="memo-tab" data-tab="tasks" type="button">Tasks</button>
             <button class="memo-tab" data-tab="map" type="button">Map</button>
           </nav>
           <div class="memo-search-group">
@@ -172,9 +181,14 @@
   <template id="memoTemplate">
     <article class="memo-card">
       <header class="memo-card-header">
-        <div>
-          <h3 class="memo-title"></h3>
-          <p class="memo-datetime"></p>
+        <div class="memo-title-group">
+          <div class="memo-todo">
+            <input type="checkbox" class="memo-todo-checkbox" aria-label="Mark task as done" />
+          </div>
+          <div>
+            <h3 class="memo-title"></h3>
+            <p class="memo-datetime"></p>
+          </div>
         </div>
         <div class="memo-card-actions">
           <span class="memo-mood" aria-hidden="true"></span>

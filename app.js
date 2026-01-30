@@ -2,7 +2,7 @@ const STORAGE_KEY = 'memo_diary_entries_v1';
 
 let memos = [];
 let editingId = null;
-let activeTab = 'all'; // 'all' | 'today' | 'pinned' | 'map'
+let activeTab = 'all'; // 'all' | 'today' | 'pinned' | 'tasks' | 'map'
 let activeMoodFilter = 'all'; // 'all' | 'great' | 'ok' | 'bad'
 let editingLocation = null;
 
@@ -11,6 +11,7 @@ const titleInput = document.getElementById('title');
 const datetimeInput = document.getElementById('datetime');
 const textInput = document.getElementById('text');
 const memoList = document.getElementById('memoList');
+const isTodoInput = document.getElementById('isTodo');
 const mapViewEl = document.getElementById('mapView');
 const sortSelect = document.getElementById('sortSelect');
 const searchInput = document.getElementById('searchInput');
@@ -159,6 +160,9 @@ function filterMemosByTab(list) {
   }
   if (activeTab === 'today') {
     return list.filter((m) => isToday(m.datetime || m.createdAt));
+  }
+  if (activeTab === 'tasks') {
+    return list.filter((m) => m.isTodo && !m.isDone);
   }
   if (activeTab === 'map') {
     // Map view uses all memos; filtering happens separately
@@ -393,10 +397,27 @@ function renderMemos() {
       const actionsEl = node.querySelector('.memo-card-actions');
       const editBtn = node.querySelector('.edit-btn');
       const deleteBtn = node.querySelector('.delete-btn');
+      const todoCheckbox = node.querySelector('.memo-todo-checkbox');
 
       if (memo.isPinned) {
         node.classList.add('pinned');
         if (pinBtn) pinBtn.classList.add('active');
+      }
+
+      if (memo.isTodo) {
+        node.classList.add('todo');
+        if (todoCheckbox) {
+          todoCheckbox.checked = !!memo.isDone;
+          todoCheckbox.addEventListener('change', () => {
+            toggleTodoDone(memo.id, todoCheckbox.checked);
+          });
+        }
+      } else if (todoCheckbox) {
+        todoCheckbox.closest('.memo-todo').style.visibility = 'hidden';
+      }
+
+      if (memo.isDone) {
+        node.classList.add('todo-done');
       }
 
       titleEl.textContent = memo.title || '(untitled)';
@@ -451,6 +472,9 @@ function resetForm() {
   memoForm.reset();
   editingId = null;
   currentMood.value = null;
+  if (isTodoInput) {
+    isTodoInput.checked = false;
+  }
   editingLocation = null;
   if (locationSummaryEl) {
     locationSummaryEl.hidden = true;
@@ -472,6 +496,9 @@ function startEditMemo(id) {
   titleInput.value = memo.title || '';
   textInput.value = memo.text || '';
   currentMood.value = memo.mood || null;
+  if (isTodoInput) {
+    isTodoInput.checked = !!memo.isTodo;
+  }
   editingLocation = memo.location || null;
   if (window.memoLocation && typeof window.memoLocation.setCurrentEditingLocation === 'function') {
     window.memoLocation.setCurrentEditingLocation(editingLocation);
@@ -508,6 +535,21 @@ function togglePinMemo(id) {
   showToast(next.isPinned ? 'Memo pinned' : 'Memo unpinned');
 }
 
+function toggleTodoDone(id, isDone) {
+  const idx = memos.findIndex((m) => m.id === id);
+  if (idx === -1) return;
+
+  const current = memos[idx];
+  const next = {
+    ...current,
+    isTodo: true,
+    isDone: !!isDone,
+  };
+  memos[idx] = next;
+  saveMemos();
+  renderMemos();
+}
+
 function deleteMemo(id) {
   const confirmed = window.confirm('Delete this memo? This cannot be undone.');
   if (!confirmed) return;
@@ -524,6 +566,7 @@ function handleSubmit(e) {
   const title = titleInput.value.trim();
   const text = textInput.value.trim();
   const datetimeValue = datetimeInput.value;
+  const isTodo = isTodoInput ? isTodoInput.checked : false;
 
   if (!text) {
     showToast('Text is required');
@@ -550,6 +593,7 @@ function handleSubmit(e) {
         text,
         datetime: isoDatetime,
         mood,
+        isTodo,
         location: editingLocation || null,
       };
     }
@@ -562,6 +606,8 @@ function handleSubmit(e) {
       text,
       datetime: isoDatetime,
       mood,
+      isTodo,
+      isDone: false,
       location: editingLocation || null,
     };
     memos.push(memo);

@@ -6,6 +6,7 @@ A minimal, offline-first memo diary Progressive Web App (PWA).
 - 💾 Stored locally in your browser via `localStorage`
 - 📤 Export all memos to a JSON backup file
 - 📥 Import backups on another browser/device (or after reinstall)
+- ✅ Mark memos as tasks and view all open tasks in a dedicated tab
 - 📈 Lightweight writing stats (streak, last entry, this week, word counts)
 - 📱 Installable to your phone home screen (Add to Home Screen)
 - 📶 Works offline via a service worker

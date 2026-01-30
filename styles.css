@@ -392,6 +392,23 @@ textarea {
   gap: 0.5rem;
 }
 
+.memo-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.memo-todo {
+  padding-top: 0.15rem;
+}
+
+.memo-card.todo-done .memo-title,
+.memo-card.todo-done .memo-text,
+.memo-card.todo-done .memo-datetime {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
 .memo-card.pinned {
   border-color: rgba(251,191,36,0.9);
   box-shadow: 0 0 0 1px rgba(251,191,36,0.3), 0 18px 45px rgba(15,23,42,0.85);
