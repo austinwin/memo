@@ -166,6 +166,24 @@ textarea {
   gap: 0.5rem;
 }
 
+.memo-list-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.search-input {
+  min-width: 0;
+  width: 140px;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 700px) {
+  .search-input {
+    width: 200px;
+  }
+}
+
 .sort-select {
   min-width: 130px;
 }

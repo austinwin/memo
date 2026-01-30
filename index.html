@@ -43,11 +43,20 @@
     <section class="memo-list-section">
       <div class="memo-list-header">
         <h2>Your Memos</h2>
-        <select id="sortSelect" class="sort-select">
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="title">Title A–Z</option>
-        </select>
+        <div class="memo-list-controls">
+          <input
+            id="searchInput"
+            class="search-input"
+            type="search"
+            placeholder="Search memos"
+            aria-label="Search memos"
+          />
+          <select id="sortSelect" class="sort-select">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="title">Title A–Z</option>
+          </select>
+        </div>
       </div>
       <div id="memoList" class="memo-list"></div>
     </section>

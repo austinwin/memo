@@ -9,6 +9,7 @@ const datetimeInput = document.getElementById('datetime');
 const textInput = document.getElementById('text');
 const memoList = document.getElementById('memoList');
 const sortSelect = document.getElementById('sortSelect');
+const searchInput = document.getElementById('searchInput');
 const toastEl = document.getElementById('toast');
 const memoTemplate = document.getElementById('memoTemplate');
 const exportBtn = document.getElementById('exportBtn');
@@ -69,15 +70,33 @@ function sortMemos(list) {
   return sorted;
 }
 
+function getSearchQuery() {
+  return (searchInput?.value || '').trim().toLowerCase();
+}
+
+function filterMemos(list) {
+  const query = getSearchQuery();
+  if (!query) return list;
+
+  return list.filter((memo) => {
+    const inTitle = (memo.title || '').toLowerCase().includes(query);
+    const inText = (memo.text || '').toLowerCase().includes(query);
+    return inTitle || inText;
+  });
+}
+
 function renderMemos() {
   if (!memoList) return;
   memoList.innerHTML = '';
 
-  const sorted = sortMemos(memos);
+  const filtered = filterMemos(memos);
+  const sorted = sortMemos(filtered);
 
   if (!sorted.length) {
     const empty = document.createElement('p');
-    empty.textContent = 'No memos yet. Start by writing your first one.';
+    empty.textContent = searchInput?.value
+      ? 'No memos match your search.'
+      : 'No memos yet. Start by writing your first one.';
     empty.style.fontSize = '0.85rem';
     empty.style.color = 'var(--muted)';
     memoList.appendChild(empty);
@@ -227,6 +246,12 @@ function init() {
 
   if (sortSelect) {
     sortSelect.addEventListener('change', renderMemos);
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      renderMemos();
+    });
   }
 
   if (exportBtn) {
