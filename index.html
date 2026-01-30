@@ -43,6 +43,10 @@
           Text
           <textarea id="text" name="text" rows="5" required placeholder="What stood out about today?"></textarea>
         </label>
+        <div class="form-location-row">
+          <button type="button" id="locationBtn" class="btn secondary">Add location</button>
+          <p id="locationSummary" class="location-summary" hidden></p>
+        </div>
         <div class="form-mood-row">
           <div class="mood-picker" aria-label="Select mood for this entry">
             <button type="button" class="mood-btn" data-mood="great">😊</button>
@@ -65,6 +69,7 @@
             <button class="memo-tab active" data-tab="all" type="button">All</button>
             <button class="memo-tab" data-tab="today" type="button">Today</button>
             <button class="memo-tab" data-tab="pinned" type="button">Pinned</button>
+            <button class="memo-tab" data-tab="map" type="button">Map</button>
           </nav>
           <input
             id="searchInput"
@@ -95,8 +100,34 @@
         </p>
       </section>
       <div id="memoList" class="memo-list"></div>
+      <div id="mapView" class="map-view" hidden></div>
     </section>
   </main>
+
+  <div id="locationModal" class="modal" hidden>
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3>Select location</h3>
+        <button type="button" id="locationModalClose" class="icon-btn">✕</button>
+      </header>
+      <div class="modal-body">
+        <div id="locationMap" class="location-map"></div>
+        <div class="location-controls">
+          <button type="button" id="useCurrentLocationBtn" class="btn secondary">Use my current location</button>
+          <input
+            type="text"
+            id="locationLabelInput"
+            class="location-label-input"
+            placeholder="Label (Home, Office, Café...)"
+          />
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button type="button" id="locationClearBtn" class="btn">Remove</button>
+        <button type="button" id="locationSaveBtn" class="btn primary">Save</button>
+      </footer>
+    </div>
+  </div>
 
   <template id="memoTemplate">
     <article class="memo-card">
@@ -118,7 +149,19 @@
 
   <div id="toast" class="toast" hidden></div>
 
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
   <script src="app.js"></script>
+  <script src="location.js"></script>
   <script src="pwa.js"></script>
 </body>
 </html>

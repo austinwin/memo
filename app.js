@@ -2,13 +2,15 @@ const STORAGE_KEY = 'memo_diary_entries_v1';
 
 let memos = [];
 let editingId = null;
-let activeTab = 'all'; // 'all' | 'today' | 'pinned'
+let activeTab = 'all'; // 'all' | 'today' | 'pinned' | 'map'
+let editingLocation = null;
 
 const memoForm = document.getElementById('memoForm');
 const titleInput = document.getElementById('title');
 const datetimeInput = document.getElementById('datetime');
 const textInput = document.getElementById('text');
 const memoList = document.getElementById('memoList');
+const mapViewEl = document.getElementById('mapView');
 const sortSelect = document.getElementById('sortSelect');
 const searchInput = document.getElementById('searchInput');
 const todayLabel = document.getElementById('todayLabel');
@@ -22,6 +24,7 @@ const memoTemplate = document.getElementById('memoTemplate');
 const exportBtn = document.getElementById('exportBtn');
 const importBtn = document.getElementById('importBtn');
 const importInput = document.getElementById('importInput');
+const locationSummaryEl = document.getElementById('locationSummary');
 
 function showToast(message) {
   if (!toastEl) return;
@@ -151,6 +154,10 @@ function filterMemosByTab(list) {
   }
   if (activeTab === 'today') {
     return list.filter((m) => isToday(m.datetime || m.createdAt));
+  }
+  if (activeTab === 'map') {
+    // Map view uses all memos; filtering happens separately
+    return list;
   }
   return list;
 }
@@ -283,10 +290,24 @@ function updateStats() {
 
 function renderMemos() {
   if (!memoList) return;
-  memoList.innerHTML = '';
 
   const filtered = filterMemos(memos);
   updateStats();
+
+  if (activeTab === 'map') {
+    memoList.hidden = true;
+    if (mapViewEl) {
+      mapViewEl.hidden = false;
+      if (window.memoLocation && typeof window.memoLocation.renderMapView === 'function') {
+        window.memoLocation.renderMapView(memos);
+      }
+    }
+    return;
+  }
+
+  memoList.hidden = false;
+  if (mapViewEl) mapViewEl.hidden = true;
+  memoList.innerHTML = '';
 
   if (!filtered.length) {
     const empty = document.createElement('p');
@@ -330,6 +351,7 @@ function renderMemos() {
       const textEl = node.querySelector('.memo-text');
       const moodEl = node.querySelector('.memo-mood');
       const pinBtn = node.querySelector('.pin-btn');
+      const actionsEl = node.querySelector('.memo-card-actions');
       const editBtn = node.querySelector('.edit-btn');
       const deleteBtn = node.querySelector('.delete-btn');
 
@@ -348,6 +370,25 @@ function renderMemos() {
         else if (memo.mood === 'ok') moodEl.textContent = '😐';
         else if (memo.mood === 'bad') moodEl.textContent = '😞';
         else moodEl.textContent = '';
+      }
+
+      if (actionsEl && memo.location && typeof memo.location.lat === 'number' && typeof memo.location.lng === 'number') {
+        const locIcon = document.createElement('button');
+        locIcon.type = 'button';
+        locIcon.className = 'icon-btn memo-location-icon';
+        locIcon.title = 'View on map';
+        locIcon.textContent = '📍';
+        locIcon.addEventListener('click', () => {
+          activeTab = 'map';
+          document.querySelectorAll('.memo-tab').forEach((b) => {
+            b.classList.toggle('active', b.getAttribute('data-tab') === 'map');
+          });
+          renderMemos();
+          if (window.memoLocation && typeof window.memoLocation.focusMemo === 'function') {
+            window.memoLocation.focusMemo(memo.id);
+          }
+        });
+        actionsEl.insertBefore(locIcon, actionsEl.firstChild);
       }
 
       if (pinBtn) {
@@ -369,6 +410,14 @@ function resetForm() {
   memoForm.reset();
   editingId = null;
   currentMood.value = null;
+  editingLocation = null;
+  if (locationSummaryEl) {
+    locationSummaryEl.hidden = true;
+    locationSummaryEl.textContent = '';
+  }
+  if (window.memoLocation && typeof window.memoLocation.setCurrentEditingLocation === 'function') {
+    window.memoLocation.setCurrentEditingLocation(null);
+  }
   document.querySelectorAll('.mood-btn').forEach((btn) => {
     btn.classList.remove('active');
   });
@@ -382,6 +431,10 @@ function startEditMemo(id) {
   titleInput.value = memo.title || '';
   textInput.value = memo.text || '';
   currentMood.value = memo.mood || null;
+  editingLocation = memo.location || null;
+  if (window.memoLocation && typeof window.memoLocation.setCurrentEditingLocation === 'function') {
+    window.memoLocation.setCurrentEditingLocation(editingLocation);
+  }
   document.querySelectorAll('.mood-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.mood === currentMood.value);
   });
@@ -456,6 +509,7 @@ function handleSubmit(e) {
         text,
         datetime: isoDatetime,
         mood,
+        location: editingLocation || null,
       };
     }
     showToast('Memo updated');
@@ -467,6 +521,7 @@ function handleSubmit(e) {
       text,
       datetime: isoDatetime,
       mood,
+      location: editingLocation || null,
     };
     memos.push(memo);
     showToast('Memo saved');
@@ -594,11 +649,7 @@ function init() {
 
   memoForm.addEventListener('submit', handleSubmit);
   memoForm.addEventListener('reset', () => {
-    editingId = null;
-    currentMood.value = null;
-    document.querySelectorAll('.mood-btn').forEach((btn) => {
-      btn.classList.remove('active');
-    });
+    resetForm();
   });
 
   if (sortSelect) {
@@ -631,6 +682,22 @@ function init() {
 
   if (exportBtn) {
     exportBtn.addEventListener('click', exportMemosToFile);
+  }
+
+  if (window.memoLocation) {
+    window.memoLocation.formatDateTime = formatDateTime;
+    window.memoLocation.focusMemo = (id) => {
+      const el = document.querySelector(`[data-memo-id="${id}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('highlight');
+        setTimeout(() => el.classList.remove('highlight'), 1000);
+      }
+    };
+    window.memoLocation.getCurrentEditingLocation = () => editingLocation;
+    if (typeof window.memoLocation.initLocationPicker === 'function') {
+      window.memoLocation.initLocationPicker();
+    }
   }
 
   if (importBtn && importInput) {
