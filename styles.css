@@ -466,7 +466,7 @@ textarea {
 .modal {
   position: fixed;
   inset: 0;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   background: rgba(15,23,42,0.8);
