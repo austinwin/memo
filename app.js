@@ -18,6 +18,8 @@ const todayLabel = document.getElementById('todayLabel');
 const streakCountEl = document.getElementById('streakCount');
 const weekCountEl = document.getElementById('weekCount');
 const lastEntryLabelEl = document.getElementById('lastEntryLabel');
+const todayWordsEl = document.getElementById('todayWords');
+const weekWordsEl = document.getElementById('weekWords');
 const todayShortcutBtn = document.getElementById('todayShortcutBtn');
 const toastEl = document.getElementById('toast');
 const currentMood = { value: null };
@@ -237,6 +239,13 @@ function groupMemosByDay(list) {
   return dayKeys.map((key) => ({ dayKey: key, memos: sortMemos(groups.get(key)) }));
 }
 
+function countWords(text) {
+  if (!text) return 0;
+  const normalized = text.trim().replace(/\s+/g, ' ');
+  if (!normalized) return 0;
+  return normalized.split(' ').length;
+}
+
 function updateStats() {
   if (!streakCountEl || !weekCountEl || !lastEntryLabelEl) return;
 
@@ -244,6 +253,8 @@ function updateStats() {
     streakCountEl.textContent = '0 days';
     weekCountEl.textContent = '0 entries';
     lastEntryLabelEl.textContent = 'None yet';
+    if (todayWordsEl) todayWordsEl.textContent = '0 words';
+    if (weekWordsEl) weekWordsEl.textContent = '0 words';
     return;
   }
 
@@ -253,6 +264,8 @@ function updateStats() {
 
   let entriesThisWeek = 0;
   let latestTimestamp = 0;
+  let wordsToday = 0;
+  let wordsThisWeek = 0;
 
   for (const memo of memos) {
     const timestamp = memo.datetime || memo.createdAt;
@@ -261,12 +274,23 @@ function updateStats() {
     const date = new Date(timestamp);
     if (Number.isNaN(date.getTime())) continue;
 
-    dayKeys.add(getDayKey(date.toISOString()));
+    const dayKey = getDayKey(date.toISOString());
+    dayKeys.add(dayKey);
 
     const diffMs = now - date;
     const diffDays = diffMs / (1000 * 60 * 60 * 24);
     if (diffDays >= 0 && diffDays < 7) {
       entriesThisWeek += 1;
+    }
+
+    const words = countWords(memo.text || '');
+
+    if (dayKey === todayKey) {
+      wordsToday += words;
+    }
+
+    if (diffDays >= 0 && diffDays < 7) {
+      wordsThisWeek += words;
     }
 
     if (date.getTime() > latestTimestamp) {
@@ -286,6 +310,13 @@ function updateStats() {
 
   streakCountEl.textContent = `${streak} day${streak === 1 ? '' : 's'}`;
   weekCountEl.textContent = `${entriesThisWeek} entr${entriesThisWeek === 1 ? 'y' : 'ies'}`;
+
+  if (todayWordsEl) {
+    todayWordsEl.textContent = `${wordsToday} word${wordsToday === 1 ? '' : 's'}`;
+  }
+  if (weekWordsEl) {
+    weekWordsEl.textContent = `${wordsThisWeek} word${wordsThisWeek === 1 ? '' : 's'}`;
+  }
 
   if (latestTimestamp) {
     lastEntryLabelEl.textContent = formatDateTime(latestTimestamp);
@@ -370,7 +401,9 @@ function renderMemos() {
 
       titleEl.textContent = memo.title || '(untitled)';
       const dt = memo.datetime || memo.createdAt;
-      datetimeEl.textContent = formatDateTime(dt) || 'No date';
+      const wordCount = countWords(memo.text || '');
+      const dateLabel = formatDateTime(dt) || 'No date';
+      datetimeEl.textContent = wordCount > 0 ? `${dateLabel} · ${wordCount} word${wordCount === 1 ? '' : 's'}` : dateLabel;
       textEl.textContent = memo.text || '';
 
       if (moodEl) {
