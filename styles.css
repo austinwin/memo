@@ -41,6 +41,17 @@ body {
   text-transform: uppercase;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.header-actions .btn {
+  padding-inline: 0.7rem;
+  font-size: 0.75rem;
+}
+
 .app-main {
   max-width: 960px;
   margin: 0 auto;

@@ -11,6 +11,7 @@ const memoList = document.getElementById('memoList');
 const sortSelect = document.getElementById('sortSelect');
 const toastEl = document.getElementById('toast');
 const memoTemplate = document.getElementById('memoTemplate');
+const exportBtn = document.getElementById('exportBtn');
 
 function showToast(message) {
   if (!toastEl) return;
@@ -190,6 +191,30 @@ function handleSubmit(e) {
   resetForm();
 }
 
+function exportMemosToFile() {
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    memos,
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const fileDate = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  a.href = url;
+  a.download = `memo-diary-backup-${fileDate}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  showToast('Exported memos');
+}
+
 function init() {
   if (!memoForm) return;
   loadMemos();
@@ -202,6 +227,10 @@ function init() {
 
   if (sortSelect) {
     sortSelect.addEventListener('change', renderMemos);
+  }
+
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportMemosToFile);
   }
 }
 
