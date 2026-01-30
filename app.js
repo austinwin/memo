@@ -17,6 +17,8 @@ const toastEl = document.getElementById('toast');
 const currentMood = { value: null };
 const memoTemplate = document.getElementById('memoTemplate');
 const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+const importInput = document.getElementById('importInput');
 
 function showToast(message) {
   if (!toastEl) return;
@@ -436,6 +438,74 @@ function exportMemosToFile() {
   showToast('Exported memos');
 }
 
+function handleImportedMemos(imported) {
+  if (!Array.isArray(imported)) {
+    showToast('Invalid backup file');
+    return;
+  }
+
+  const hasExisting = memos.length > 0;
+  let next = [];
+
+  if (hasExisting) {
+    const replace = window.confirm('Replace all existing memos with this backup?');
+    if (replace) {
+      next = imported;
+    } else {
+      const byId = new Map();
+      for (const m of memos) {
+        if (!m || typeof m !== 'object') continue;
+        byId.set(m.id, m);
+      }
+      for (const m of imported) {
+        if (!m || typeof m !== 'object') continue;
+        if (m.id == null) continue;
+        byId.set(m.id, m);
+      }
+      next = Array.from(byId.values());
+    }
+  } else {
+    next = imported;
+  }
+
+  memos = next;
+  saveMemos();
+  renderMemos();
+  showToast('Imported memos');
+}
+
+function importMemosFromFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const text = event.target.result;
+      const data = JSON.parse(text);
+      if (!data || typeof data !== 'object') {
+        showToast('Invalid backup file');
+        return;
+      }
+
+      // Support both current and potential future formats
+      const imported = Array.isArray(data.memos) ? data.memos : Array.isArray(data) ? data : null;
+      if (!imported) {
+        showToast('Invalid backup file');
+        return;
+      }
+
+      handleImportedMemos(imported);
+    } catch (e) {
+      console.error('Failed to import memos', e);
+      showToast('Could not read backup file');
+    }
+  };
+  reader.onerror = () => {
+    showToast('Could not read backup file');
+  };
+  reader.readAsText(file);
+}
+
 function init() {
   if (!memoForm) return;
   loadMemos();
@@ -497,6 +567,20 @@ function init() {
 
   if (exportBtn) {
     exportBtn.addEventListener('click', exportMemosToFile);
+  }
+
+  if (importBtn && importInput) {
+    importBtn.addEventListener('click', () => {
+      importInput.value = '';
+      importInput.click();
+    });
+
+    importInput.addEventListener('change', () => {
+      const [file] = importInput.files || [];
+      if (file) {
+        importMemosFromFile(file);
+      }
+    });
   }
 }
 
