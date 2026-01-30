@@ -1,4 +1,10 @@
-const CACHE_NAME = 'memo-diary-cache-v1';
+// Memo Diary service worker
+// - Uses explicit cache versioning for safe PWA updates
+// - Cleans up old caches on activate so users get fresh code after deploys
+
+const CACHE_VERSION = 'v2'; // bump this on each deploy that changes assets
+const CACHE_NAME = `memo-diary-cache-${CACHE_VERSION}`;
+
 const OFFLINE_URLS = [
   './',
   './index.html',
@@ -16,14 +22,27 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter(
+              (key) =>
+                key.startsWith('memo-diary-cache-') && key !== CACHE_NAME
+            )
+            .map((key) => caches.delete(key))
+        )
       )
-    )
+      .then(() => self.clients.claim())
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (!event.data) return;
+  if (event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (event) => {
