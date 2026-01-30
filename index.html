@@ -44,6 +44,11 @@
       <div class="memo-list-header">
         <h2>Your Memos</h2>
         <div class="memo-list-controls">
+          <nav class="memo-tabs" aria-label="Filter memos">
+            <button class="memo-tab active" data-tab="all" type="button">All</button>
+            <button class="memo-tab" data-tab="today" type="button">Today</button>
+            <button class="memo-tab" data-tab="pinned" type="button">Pinned</button>
+          </nav>
           <input
             id="searchInput"
             class="search-input"
@@ -70,6 +75,7 @@
           <p class="memo-datetime"></p>
         </div>
         <div class="memo-card-actions">
+          <button class="icon-btn pin-btn" title="Pin or unpin">📌</button>
           <button class="icon-btn edit-btn" title="Edit">✏️</button>
           <button class="icon-btn delete-btn" title="Delete">🗑️</button>
         </div>

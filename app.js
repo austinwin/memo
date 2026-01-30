@@ -2,6 +2,7 @@ const STORAGE_KEY = 'memo_diary_entries_v1';
 
 let memos = [];
 let editingId = null;
+let activeTab = 'all'; // 'all' | 'today' | 'pinned'
 
 const memoForm = document.getElementById('memoForm');
 const titleInput = document.getElementById('title');
@@ -60,13 +61,39 @@ function sortMemos(list) {
   const mode = sortSelect?.value || 'newest';
   const sorted = [...list];
 
+  // Pinned memos always come before non-pinned in the current view.
+  sorted.sort((a, b) => {
+    const aPinned = !!a.isPinned;
+    const bPinned = !!b.isPinned;
+    if (aPinned !== bPinned) {
+      return aPinned ? -1 : 1;
+    }
+    return 0;
+  });
+
   if (mode === 'title') {
-    sorted.sort((a, b) => a.title.localeCompare(b.title));
+    sorted.sort((a, b) => {
+      const aPinned = !!a.isPinned;
+      const bPinned = !!b.isPinned;
+      if (aPinned !== bPinned) return aPinned ? -1 : 1;
+      return (a.title || '').localeCompare(b.title || '');
+    });
   } else if (mode === 'oldest') {
-    sorted.sort((a, b) => (a.createdAt || a.id) - (b.createdAt || b.id));
+    sorted.sort((a, b) => {
+      const aPinned = !!a.isPinned;
+      const bPinned = !!b.isPinned;
+      if (aPinned !== bPinned) return aPinned ? -1 : 1;
+      return (a.createdAt || a.id) - (b.createdAt || b.id);
+    });
   } else {
-    sorted.sort((a, b) => (b.createdAt || b.id) - (a.createdAt || a.id));
+    sorted.sort((a, b) => {
+      const aPinned = !!a.isPinned;
+      const bPinned = !!b.isPinned;
+      if (aPinned !== bPinned) return aPinned ? -1 : 1;
+      return (b.createdAt || b.id) - (a.createdAt || a.id);
+    });
   }
+
   return sorted;
 }
 
@@ -74,11 +101,35 @@ function getSearchQuery() {
   return (searchInput?.value || '').trim().toLowerCase();
 }
 
+function isToday(isoString) {
+  if (!isoString) return false;
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) return false;
+
+  const today = new Date();
+  return (
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate()
+  );
+}
+
+function filterMemosByTab(list) {
+  if (activeTab === 'pinned') {
+    return list.filter((m) => m.isPinned);
+  }
+  if (activeTab === 'today') {
+    return list.filter((m) => isToday(m.datetime || m.createdAt));
+  }
+  return list;
+}
+
 function filterMemos(list) {
   const query = getSearchQuery();
-  if (!query) return list;
+  const byTab = filterMemosByTab(list);
+  if (!query) return byTab;
 
-  return list.filter((memo) => {
+  return byTab.filter((memo) => {
     const inTitle = (memo.title || '').toLowerCase().includes(query);
     const inText = (memo.text || '').toLowerCase().includes(query);
     return inTitle || inText;
@@ -108,13 +159,23 @@ function renderMemos() {
     const titleEl = node.querySelector('.memo-title');
     const datetimeEl = node.querySelector('.memo-datetime');
     const textEl = node.querySelector('.memo-text');
+    const pinBtn = node.querySelector('.pin-btn');
     const editBtn = node.querySelector('.edit-btn');
     const deleteBtn = node.querySelector('.delete-btn');
+
+    if (memo.isPinned) {
+      node.classList.add('pinned');
+      if (pinBtn) pinBtn.classList.add('active');
+    }
 
     titleEl.textContent = memo.title || '(untitled)';
     const dt = memo.datetime || memo.createdAt;
     datetimeEl.textContent = formatDateTime(dt) || 'No date';
     textEl.textContent = memo.text || '';
+
+    if (pinBtn) {
+      pinBtn.addEventListener('click', () => togglePinMemo(memo.id));
+    }
 
     editBtn.addEventListener('click', () => startEditMemo(memo.id));
     deleteBtn.addEventListener('click', () => deleteMemo(memo.id));
@@ -149,6 +210,19 @@ function startEditMemo(id) {
   }
 
   showToast('Editing memo');
+}
+
+function togglePinMemo(id) {
+  const idx = memos.findIndex((m) => m.id === id);
+  if (idx === -1) return;
+
+  const current = memos[idx];
+  const next = { ...current, isPinned: !current.isPinned };
+  memos[idx] = next;
+
+  saveMemos();
+  renderMemos();
+  showToast(next.isPinned ? 'Memo pinned' : 'Memo unpinned');
 }
 
 function deleteMemo(id) {
@@ -238,6 +312,21 @@ function init() {
   if (!memoForm) return;
   loadMemos();
   renderMemos();
+
+  // Wire up tab buttons
+  document.querySelectorAll('.memo-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+      if (!tab) return;
+      activeTab = tab;
+
+      document.querySelectorAll('.memo-tab').forEach((b) => {
+        b.classList.toggle('active', b === btn);
+      });
+
+      renderMemos();
+    });
+  });
 
   memoForm.addEventListener('submit', handleSubmit);
   memoForm.addEventListener('reset', () => {
