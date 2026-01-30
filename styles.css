@@ -466,12 +466,16 @@ textarea {
 .modal {
   position: fixed;
   inset: 0;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   background: rgba(15,23,42,0.8);
   backdrop-filter: blur(10px);
   z-index: 50;
+}
+
+.modal[hidden] {
+  display: none;
 }
 
 .modal-content {
