@@ -25,6 +25,7 @@ const exportBtn = document.getElementById('exportBtn');
 const importBtn = document.getElementById('importBtn');
 const importInput = document.getElementById('importInput');
 const mapHeaderBtn = document.getElementById('mapHeaderBtn');
+const installBtn = document.getElementById('installBtn');
 const locationSummaryEl = document.getElementById('locationSummary');
 
 function showToast(message) {
@@ -685,14 +686,22 @@ function init() {
     exportBtn.addEventListener('click', exportMemosToFile);
   }
 
-  if (mapHeaderBtn) {
-    mapHeaderBtn.addEventListener('click', () => {
-      activeTab = 'map';
-      document.querySelectorAll('.memo-tab').forEach((b) => {
-        b.classList.toggle('active', b.getAttribute('data-tab') === 'map');
-      });
-      renderMemos();
+  function goToMapView() {
+    activeTab = 'map';
+    document.querySelectorAll('.memo-tab').forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-tab') === 'map');
     });
+    renderMemos();
+  }
+
+  if (mapHeaderBtn) {
+    mapHeaderBtn.addEventListener('click', goToMapView);
+  }
+
+  if (installBtn) {
+    installBtn.hidden = false;
+    installBtn.textContent = 'Map view';
+    installBtn.addEventListener('click', goToMapView);
   }
 
   if (window.memoLocation) {
@@ -706,6 +715,9 @@ function init() {
       }
     };
     window.memoLocation.getCurrentEditingLocation = () => editingLocation;
+    window.memoLocation.onLocationSelected = (loc) => {
+      editingLocation = loc || null;
+    };
     if (typeof window.memoLocation.initLocationPicker === 'function') {
       window.memoLocation.initLocationPicker();
     }
