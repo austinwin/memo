@@ -152,6 +152,20 @@ textarea {
   filter: brightness(1.05);
 }
 
+.memo-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.today-label {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
 .memo-list-section {
   display: flex;
   flex-direction: column;

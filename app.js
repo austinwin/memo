@@ -11,6 +11,8 @@ const textInput = document.getElementById('text');
 const memoList = document.getElementById('memoList');
 const sortSelect = document.getElementById('sortSelect');
 const searchInput = document.getElementById('searchInput');
+const todayLabel = document.getElementById('todayLabel');
+const todayShortcutBtn = document.getElementById('todayShortcutBtn');
 const toastEl = document.getElementById('toast');
 const memoTemplate = document.getElementById('memoTemplate');
 const exportBtn = document.getElementById('exportBtn');
@@ -23,6 +25,29 @@ function showToast(message) {
   showToast._timeout = setTimeout(() => {
     toastEl.hidden = true;
   }, 2000);
+}
+
+function updateTodayLabel() {
+  if (!todayLabel) return;
+  const now = new Date();
+  const formatted = now.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  });
+  todayLabel.textContent = formatted;
+}
+
+function setDatetimeToNow() {
+  if (!datetimeInput) return;
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  const value = `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(
+    local.getDate()
+  )}T${pad(local.getHours())}:${pad(local.getMinutes())}`;
+  datetimeInput.value = value;
 }
 
 function loadMemos() {
@@ -311,6 +336,8 @@ function exportMemosToFile() {
 function init() {
   if (!memoForm) return;
   loadMemos();
+  updateTodayLabel();
+  setDatetimeToNow();
   renderMemos();
 
   // Wire up tab buttons
@@ -340,6 +367,13 @@ function init() {
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       renderMemos();
+    });
+  }
+
+  if (todayShortcutBtn) {
+    todayShortcutBtn.addEventListener('click', () => {
+      setDatetimeToNow();
+      titleInput.focus();
     });
   }
 

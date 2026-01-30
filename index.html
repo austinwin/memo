@@ -19,7 +19,15 @@
 
   <main class="app-main">
     <section class="memo-form-section">
-      <h2>New Memo</h2>
+      <header class="memo-form-header">
+        <div>
+          <h2>Today</h2>
+          <p id="todayLabel" class="today-label"></p>
+        </div>
+        <button id="todayShortcutBtn" class="btn secondary" type="button">
+          New entry for today
+        </button>
+      </header>
       <form id="memoForm">
         <label>
           Title
