@@ -12,6 +12,9 @@ const memoList = document.getElementById('memoList');
 const sortSelect = document.getElementById('sortSelect');
 const searchInput = document.getElementById('searchInput');
 const todayLabel = document.getElementById('todayLabel');
+const streakCountEl = document.getElementById('streakCount');
+const weekCountEl = document.getElementById('weekCount');
+const lastEntryLabelEl = document.getElementById('lastEntryLabel');
 const todayShortcutBtn = document.getElementById('todayShortcutBtn');
 const toastEl = document.getElementById('toast');
 const currentMood = { value: null };
@@ -219,11 +222,71 @@ function groupMemosByDay(list) {
   return dayKeys.map((key) => ({ dayKey: key, memos: sortMemos(groups.get(key)) }));
 }
 
+function updateStats() {
+  if (!streakCountEl || !weekCountEl || !lastEntryLabelEl) return;
+
+  if (!memos.length) {
+    streakCountEl.textContent = '0 days';
+    weekCountEl.textContent = '0 entries';
+    lastEntryLabelEl.textContent = 'None yet';
+    return;
+  }
+
+  const now = new Date();
+  const todayKey = getDayKey(now.toISOString());
+  const dayKeys = new Set();
+
+  let entriesThisWeek = 0;
+  let latestTimestamp = 0;
+
+  for (const memo of memos) {
+    const timestamp = memo.datetime || memo.createdAt;
+    if (!timestamp) continue;
+
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) continue;
+
+    dayKeys.add(getDayKey(date.toISOString()));
+
+    const diffMs = now - date;
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+    if (diffDays >= 0 && diffDays < 7) {
+      entriesThisWeek += 1;
+    }
+
+    if (date.getTime() > latestTimestamp) {
+      latestTimestamp = date.getTime();
+    }
+  }
+
+  // Compute streak from today backwards
+  let streak = 0;
+  let cursor = new Date();
+  while (true) {
+    const key = getDayKey(cursor.toISOString());
+    if (!dayKeys.has(key)) break;
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  streakCountEl.textContent = `${streak} day${streak === 1 ? '' : 's'}`;
+  weekCountEl.textContent = `${entriesThisWeek} entr${entriesThisWeek === 1 ? 'y' : 'ies'}`;
+
+  if (latestTimestamp) {
+    lastEntryLabelEl.textContent = formatDateTime(latestTimestamp);
+  } else if (dayKeys.has(todayKey)) {
+    lastEntryLabelEl.textContent = 'Today';
+  } else {
+    lastEntryLabelEl.textContent = 'None yet';
+  }
+}
+
 function renderMemos() {
   if (!memoList) return;
   memoList.innerHTML = '';
 
   const filtered = filterMemos(memos);
+  updateStats();
 
   if (!filtered.length) {
     const empty = document.createElement('p');
@@ -512,6 +575,7 @@ function init() {
   updateTodayLabel();
   setDatetimeToNow();
   renderMemos();
+  updateStats();
 
   // Wire up tab buttons
   document.querySelectorAll('.memo-tab').forEach((btn) => {
