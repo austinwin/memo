@@ -14,6 +14,7 @@ const searchInput = document.getElementById('searchInput');
 const todayLabel = document.getElementById('todayLabel');
 const todayShortcutBtn = document.getElementById('todayShortcutBtn');
 const toastEl = document.getElementById('toast');
+const currentMood = { value: null };
 const memoTemplate = document.getElementById('memoTemplate');
 const exportBtn = document.getElementById('exportBtn');
 
@@ -262,6 +263,7 @@ function renderMemos() {
       const titleEl = node.querySelector('.memo-title');
       const datetimeEl = node.querySelector('.memo-datetime');
       const textEl = node.querySelector('.memo-text');
+      const moodEl = node.querySelector('.memo-mood');
       const pinBtn = node.querySelector('.pin-btn');
       const editBtn = node.querySelector('.edit-btn');
       const deleteBtn = node.querySelector('.delete-btn');
@@ -275,6 +277,13 @@ function renderMemos() {
       const dt = memo.datetime || memo.createdAt;
       datetimeEl.textContent = formatDateTime(dt) || 'No date';
       textEl.textContent = memo.text || '';
+
+      if (moodEl) {
+        if (memo.mood === 'great') moodEl.textContent = '😊';
+        else if (memo.mood === 'ok') moodEl.textContent = '😐';
+        else if (memo.mood === 'bad') moodEl.textContent = '😞';
+        else moodEl.textContent = '';
+      }
 
       if (pinBtn) {
         pinBtn.addEventListener('click', () => togglePinMemo(memo.id));
@@ -294,6 +303,10 @@ function renderMemos() {
 function resetForm() {
   memoForm.reset();
   editingId = null;
+  currentMood.value = null;
+  document.querySelectorAll('.mood-btn').forEach((btn) => {
+    btn.classList.remove('active');
+  });
 }
 
 function startEditMemo(id) {
@@ -303,6 +316,10 @@ function startEditMemo(id) {
   editingId = id;
   titleInput.value = memo.title || '';
   textInput.value = memo.text || '';
+  currentMood.value = memo.mood || null;
+  document.querySelectorAll('.mood-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.mood === currentMood.value);
+  });
 
   if (memo.datetime) {
     const d = new Date(memo.datetime);
@@ -363,6 +380,8 @@ function handleSubmit(e) {
     }
   }
 
+  const mood = currentMood.value || null;
+
   if (editingId != null) {
     const idx = memos.findIndex(m => m.id === editingId);
     if (idx !== -1) {
@@ -371,6 +390,7 @@ function handleSubmit(e) {
         title,
         text,
         datetime: isoDatetime,
+        mood,
       };
     }
     showToast('Memo updated');
@@ -381,6 +401,7 @@ function handleSubmit(e) {
       title,
       text,
       datetime: isoDatetime,
+      mood,
     };
     memos.push(memo);
     showToast('Memo saved');
@@ -440,6 +461,10 @@ function init() {
   memoForm.addEventListener('submit', handleSubmit);
   memoForm.addEventListener('reset', () => {
     editingId = null;
+    currentMood.value = null;
+    document.querySelectorAll('.mood-btn').forEach((btn) => {
+      btn.classList.remove('active');
+    });
   });
 
   if (sortSelect) {
@@ -458,6 +483,17 @@ function init() {
       titleInput.focus();
     });
   }
+
+  // Mood picker
+  document.querySelectorAll('.mood-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mood = btn.dataset.mood;
+      currentMood.value = currentMood.value === mood ? null : mood;
+      document.querySelectorAll('.mood-btn').forEach((b) => {
+        b.classList.toggle('active', b === btn && currentMood.value != null);
+      });
+    });
+  });
 
   if (exportBtn) {
     exportBtn.addEventListener('click', exportMemosToFile);

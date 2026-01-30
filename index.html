@@ -39,11 +39,18 @@
         </label>
         <label>
           Text
-          <textarea id="text" name="text" rows="5" required></textarea>
+          <textarea id="text" name="text" rows="5" required placeholder="What stood out about today?"></textarea>
         </label>
-        <div class="form-actions">
-          <button type="submit" class="btn primary">Save Memo</button>
-          <button type="reset" class="btn">Clear</button>
+        <div class="form-mood-row">
+          <div class="mood-picker" aria-label="Select mood for this entry">
+            <button type="button" class="mood-btn" data-mood="great">😊</button>
+            <button type="button" class="mood-btn" data-mood="ok">😐</button>
+            <button type="button" class="mood-btn" data-mood="bad">😞</button>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn primary">Save Memo</button>
+            <button type="reset" class="btn">Clear</button>
+          </div>
         </div>
       </form>
     </section>
@@ -83,6 +90,7 @@
           <p class="memo-datetime"></p>
         </div>
         <div class="memo-card-actions">
+          <span class="memo-mood" aria-hidden="true"></span>
           <button class="icon-btn pin-btn" title="Pin or unpin">📌</button>
           <button class="icon-btn edit-btn" title="Edit">✏️</button>
           <button class="icon-btn delete-btn" title="Delete">🗑️</button>
