@@ -3,6 +3,7 @@ const STORAGE_KEY = 'memo_diary_entries_v1';
 let memos = [];
 let editingId = null;
 let activeTab = 'all'; // 'all' | 'today' | 'pinned' | 'map'
+let activeMoodFilter = 'all'; // 'all' | 'great' | 'ok' | 'bad'
 let editingLocation = null;
 
 const memoForm = document.getElementById('memoForm');
@@ -167,9 +168,14 @@ function filterMemosByTab(list) {
 function filterMemos(list) {
   const query = getSearchQuery();
   const byTab = filterMemosByTab(list);
-  if (!query) return byTab;
 
-  return byTab.filter((memo) => {
+  const byMood = activeMoodFilter === 'all'
+    ? byTab
+    : byTab.filter((memo) => (memo.mood || null) === activeMoodFilter);
+
+  if (!query) return byMood;
+
+  return byMood.filter((memo) => {
     const inTitle = (memo.title || '').toLowerCase().includes(query);
     const inText = (memo.text || '').toLowerCase().includes(query);
     return inTitle || inText;
@@ -671,7 +677,7 @@ function init() {
     });
   }
 
-  // Mood picker
+  // Mood picker for new/edit form
   document.querySelectorAll('.mood-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const mood = btn.dataset.mood;
@@ -679,6 +685,20 @@ function init() {
       document.querySelectorAll('.mood-btn').forEach((b) => {
         b.classList.toggle('active', b === btn && currentMood.value != null);
       });
+    });
+  });
+
+  // Mood filter chips for the list (All / 😊 / 😐 / 😞)
+  document.querySelectorAll('.mood-filter-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mood = btn.dataset.mood;
+      activeMoodFilter = mood || 'all';
+
+      document.querySelectorAll('.mood-filter-btn').forEach((b) => {
+        b.classList.toggle('active', b === btn);
+      });
+
+      renderMemos();
     });
   });
 

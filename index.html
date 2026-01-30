@@ -71,13 +71,45 @@
             <button class="memo-tab" data-tab="pinned" type="button">Pinned</button>
             <button class="memo-tab" data-tab="map" type="button">Map</button>
           </nav>
-          <input
-            id="searchInput"
-            class="search-input"
-            type="search"
-            placeholder="Search memos"
-            aria-label="Search memos"
-          />
+          <div class="memo-search-group">
+            <input
+              id="searchInput"
+              class="search-input"
+              type="search"
+              placeholder="Search memos"
+              aria-label="Search memos"
+            />
+            <div class="mood-filter" aria-label="Filter by mood" role="radiogroup">
+              <button
+                type="button"
+                class="mood-filter-btn active"
+                data-mood="all"
+                role="radio"
+                aria-pressed="true"
+              >All moods</button>
+              <button
+                type="button"
+                class="mood-filter-btn"
+                data-mood="great"
+                role="radio"
+                aria-pressed="false"
+              >😊</button>
+              <button
+                type="button"
+                class="mood-filter-btn"
+                data-mood="ok"
+                role="radio"
+                aria-pressed="false"
+              >😐</button>
+              <button
+                type="button"
+                class="mood-filter-btn"
+                data-mood="bad"
+                role="radio"
+                aria-pressed="false"
+              >😞</button>
+            </div>
+          </div>
           <select id="sortSelect" class="sort-select">
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>

@@ -268,6 +268,33 @@ textarea {
   gap: 0.4rem;
 }
 
+.memo-search-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mood-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.mood-filter-btn {
+  border: none;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  background: rgba(15,23,42,0.7);
+  color: var(--muted);
+}
+
+.mood-filter-btn.active {
+  background: rgba(34,197,94,0.25);
+  color: #ecfeff;
+}
+
 .memo-tabs {
   display: inline-flex;
   align-items: center;
@@ -567,6 +594,10 @@ textarea {
   .memo-tabs {
     max-width: 60%;
     overflow-x: auto;
+  }
+
+  .memo-search-group {
+    flex: 1;
   }
 
   .memo-card {
