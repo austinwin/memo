@@ -1,56 +1,101 @@
-# Memo Diary (dev by moltbot)
+# Memo Diary
 
 A minimal, offline-first memo diary Progressive Web App (PWA).
 
-- 📝 Create and edit memos with title, date/time, and text
-- 💾 Stored locally in your browser via `localStorage`
-- 📤 Export all memos to a JSON backup file
-- 📥 Import backups on another browser/device (or after reinstall)
-- ✅ Mark memos as tasks and view all open tasks in a dedicated tab
-- 🎯 Set a daily writing goal and see progress based on today's word count
-- 📈 Lightweight writing stats (streak, last entry, this week, word counts)
-- 👀 Quick view selector to jump between all entries, today, pinned, tasks, or the map
-- 📱 Installable to your phone home screen (Add to Home Screen)
-- 📶 Works offline via a service worker
+## ✨ Features
 
-## Backup & Restore
+- 📝 **Create & Edit Memos**: Title, date/time, text, mood, location, and task status
+- 📌 **Pin Important Entries**: Pin/unpin memos for quick access
+- ✅ **Task Tracking**: Mark memos as tasks, check off when done, view open tasks
+- 📅 **Writing Stats**: Streak, last entry, week count, word counts, daily goal progress
+- 🎯 **Daily Goal**: Set a daily writing goal and see progress
+- 🔍 **Search & Filter**: Search by text, filter by mood, sort by date/title
+- 🗺️ **Map View**: Visualize memos with locations on an interactive map (Leaflet)
+- 📍 **Location Picker**: Add/edit location with symbol and label, use current location
+- 📤 **Export/Import**: Backup all memos to JSON, restore or merge backups
+- 📱 **Installable PWA**: Add to home screen, works offline via service worker
+- 🔄 **Sync & Recovery**: Import/export for device migration or manual backup
+- 🖥️ **Responsive UI**: Mobile-first, works on desktop and mobile browsers
 
-Your data lives entirely in your browser (`localStorage`). To move it between
-browsers/devices or keep a manual backup:
+## 🗂️ App Structure
 
-1. **Export a backup**
-   - Click **Export** in the top-right.
-   - This downloads a file named like `memo-diary-backup-YYYY-MM-DD.json`.
+```
+memo/
+├── index.html          # Main HTML, links to src/main.js
+├── styles.css          # App styles
+├── service-worker.js   # Offline support
+├── src/
+│   ├── main.js         # Entry point, wires modules and events
+│   ├── config/
+│   │   └── constants.js    # Storage keys, settings, pagination
+│   ├── modules/
+│   │   ├── MemoManager.js  # Sorting, filtering, stats, timeline logic
+│   │   ├── MapManager.js   # Map rendering, location picker
+│   │   └── PWA.js          # Service worker, install prompt
+│   ├── services/
+│   │   └── Storage.js      # LocalStorage, import/export
+│   ├── ui/
+│   │   ├── Renderer.js     # DOM rendering, pagination, stats
+│   │   └── Toast.js        # Toast notifications
+│   └── utils/
+│       ├── date.js         # Date formatting helpers
+│       └── helpers.js      # Word count, mobile view
+```
 
-2. **Import a backup**
-   - Open the app on the new browser/device.
-   - Click **Import** in the top-right and choose a previous backup file.
-   - If you already have memos, you can choose to replace everything or merge
-     the backup with your current entries.
+## 🛠️ How to Extend
 
-## Running locally
+- **Add a new feature/view**:
+  - Add pure logic to `src/modules/` (e.g., filtering, sorting, stats)
+  - Add UI rendering to `src/ui/Renderer.js` or a new UI module
+  - Wire up events in `src/main.js` (bind DOM, update state, call render)
+- **Add a new config/setting**:
+  - Define in `src/config/constants.js`
+  - Use in relevant modules/services
+- **Add a new service (e.g., sync, cloud)**:
+  - Create a new file in `src/services/`
+  - Import and use in `src/main.js`
+- **Add a new UI component**:
+  - Create in `src/ui/`
+  - Use in `Renderer.js` or main entry
+- **Add a new utility/helper**:
+  - Place in `src/utils/`
+  - Import where needed
 
-Just open `index.html` in a modern browser, or serve the folder with any static file server, for example:
+### Example: Add a "Tags" Feature
+1. Add tag logic to `MemoManager.js` (parse, filter, group)
+2. Add tag UI to `Renderer.js` (render tags, filter controls)
+3. Update `main.js` to handle tag events and state
+4. Update `Storage.js` to persist tags
+
+## 🚀 Running Locally
+
+Open `index.html` in a modern browser, or serve with any static file server:
 
 ```bash
 npx serve .
 ```
 
-Then open the printed URL in your browser.
+## 🌐 Deploying to GitHub Pages
 
-## GitHub Pages
+1. Go to **Settings → Pages** in the repo
+2. Set source to `main` branch, root folder
+3. Save and wait for the live URL
 
-To host this app at `https://austinwin.github.io/memo`:
+## 📦 Backup & Restore
 
-1. Go to **Settings → Pages** in the `memo` repo.
-2. Under **Source**, choose:
-   - **Branch:** `main`
-   - **Folder:** `/ (root)`
-3. Click **Save**.
-4. Wait a minute; GitHub will show the live URL (usually `https://austinwin.github.io/memo`).
+- **Export**: Click Export to download all memos as JSON
+- **Import**: Click Import to restore or merge a backup
+- Data is stored in your browser (`localStorage`)
 
-On your phone:
+## 🧩 Technologies
+- Vanilla JS (ES Modules)
+- Leaflet (Map)
+- Service Worker (Offline)
+- LocalStorage (Persistence)
 
-1. Open the GitHub Pages URL in Safari (iOS) or Chrome (Android).
-2. Use **Share → Add to Home Screen** (iOS) or **Add to Home Screen** (Chrome menu).
-3. Launch it like a native app; it will work offline after the first load.
+## 📝 License
+MIT
+
+---
+
+**Contributions welcome!**

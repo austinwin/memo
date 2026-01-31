@@ -1,0 +1,210 @@
+import { formatDateTime, formatDayLabel, getDayKey } from '../utils/date.js';
+import { countWords } from '../utils/helpers.js';
+import { MemoManager } from '../modules/MemoManager.js';
+
+export const Renderer = {
+  renderList(container, memos, template, callbacks = {}) {
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (!memos.length) {
+      this.renderEmptyState(container, callbacks.isSearchActive);
+      return;
+    }
+
+    // Grouping is handled by MemoManager, but we usually group the *page items*
+    // So we rely on the caller to provide the ready-to-render list (paginated).
+    const dayGroups = MemoManager.groupMemosByDay(memos);
+
+    for (const { dayKey, memos: dayMemos } of dayGroups) {
+      const section = document.createElement('section');
+      section.className = 'memo-day-group';
+
+      const header = document.createElement('header');
+      header.className = 'memo-day-header';
+
+      const title = document.createElement('h3');
+      title.className = 'memo-day-title';
+      title.textContent = formatDayLabel(dayKey);
+
+      const count = document.createElement('p');
+      count.className = 'memo-day-count';
+      count.textContent = `${dayMemos.length} entr${dayMemos.length === 1 ? 'y' : 'ies'}`;
+
+      header.appendChild(title);
+      header.appendChild(count);
+      section.appendChild(header);
+
+      const list = document.createElement('div');
+      list.className = 'memo-day-list';
+
+      for (const memo of dayMemos) {
+        const node = this.createMemoNode(memo, template, callbacks);
+        list.appendChild(node);
+      }
+
+      section.appendChild(list);
+      container.appendChild(section);
+    }
+  },
+
+  createMemoNode(memo, template, callbacks) {
+    if (!template) {
+       console.error("Template not found");
+       return document.createElement('div');
+    }
+    
+    const node = template.content.firstElementChild.cloneNode(true);
+    node.dataset.memoId = memo.id;
+    
+    const titleEl = node.querySelector('.memo-title');
+    const datetimeEl = node.querySelector('.memo-datetime');
+    const textEl = node.querySelector('.memo-text');
+    const moodEl = node.querySelector('.memo-mood');
+    const pinBtn = node.querySelector('.pin-btn');
+    const actionsEl = node.querySelector('.memo-card-actions');
+    const editBtn = node.querySelector('.edit-btn');
+    const deleteBtn = node.querySelector('.delete-btn');
+    const todoCheckbox = node.querySelector('.memo-todo-checkbox');
+
+    if (memo.isPinned) {
+      node.classList.add('pinned');
+      if (pinBtn) pinBtn.classList.add('active');
+    }
+
+    if (memo.isTodo) {
+      node.classList.add('todo');
+      if (todoCheckbox) {
+        todoCheckbox.checked = !!memo.isDone;
+        todoCheckbox.addEventListener('change', () => {
+          if (callbacks.onTodoToggle) callbacks.onTodoToggle(memo.id, todoCheckbox.checked);
+        });
+      }
+    } else if (todoCheckbox) {
+      // Hide todo box if not a task
+      // In strict CSS this might be handled by .todo class, but safer to hide manually if structure expects it
+      const parent = todoCheckbox.closest('.memo-todo');
+      if (parent) parent.style.visibility = 'hidden';
+    }
+
+    if (memo.isDone) {
+      node.classList.add('todo-done');
+    }
+
+    if (titleEl) titleEl.textContent = memo.title || '(untitled)';
+    
+    if (datetimeEl) {
+        const dt = memo.datetime || memo.createdAt;
+        const wordCount = countWords(memo.text || '');
+        const dateLabel = formatDateTime(dt) || 'No date';
+        datetimeEl.textContent = wordCount > 0 ? `${dateLabel} · ${wordCount} word${wordCount === 1 ? '' : 's'}` : dateLabel;
+    }
+    
+    if (textEl) textEl.textContent = memo.text || '';
+
+    if (moodEl) {
+      if (memo.mood === 'great') moodEl.textContent = '😊';
+      else if (memo.mood === 'ok') moodEl.textContent = '😐';
+      else if (memo.mood === 'bad') moodEl.textContent = '😞';
+      else moodEl.textContent = '';
+    }
+
+    if (actionsEl && memo.location && typeof memo.location.lat === 'number') {
+      const locIcon = document.createElement('button');
+      locIcon.type = 'button';
+      locIcon.className = 'icon-btn memo-location-icon';
+      locIcon.title = 'View on map';
+      locIcon.textContent = memo.location.symbol || '📍';
+      locIcon.addEventListener('click', () => {
+        if (callbacks.onLocationClick) callbacks.onLocationClick(memo);
+      });
+      actionsEl.insertBefore(locIcon, actionsEl.firstChild);
+    }
+
+    if (pinBtn) {
+      pinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (callbacks.onPin) callbacks.onPin(memo.id);
+      });
+    }
+
+    if (editBtn) {
+        editBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (callbacks.onEdit) callbacks.onEdit(memo.id);
+        });
+    }
+    
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (callbacks.onDelete) callbacks.onDelete(memo.id);
+        });
+    }
+
+    return node;
+  },
+
+  renderEmptyState(container, isSearchActive) {
+    const empty = document.createElement('p');
+    empty.textContent = isSearchActive
+      ? 'No memos match your search.'
+      : 'No memos yet. Start by writing your first one.';
+    empty.style.fontSize = '0.85rem';
+    empty.style.color = 'var(--muted)';
+    container.appendChild(empty);
+  },
+
+  updateStatsDOM(stats, elements, goal) {
+    const { streakCountEl, weekCountEl, todayWordsEl, weekWordsEl, lastEntryLabelEl, dailyGoalLabel } = elements;
+    
+    if (streakCountEl) streakCountEl.textContent = `${stats.streak} day${stats.streak === 1 ? '' : 's'}`;
+    if (weekCountEl) weekCountEl.textContent = `${stats.entriesThisWeek} entr${stats.entriesThisWeek === 1 ? 'y' : 'ies'}`;
+    if (todayWordsEl) todayWordsEl.textContent = `${stats.wordsToday} word${stats.wordsToday === 1 ? '' : 's'}`;
+    if (weekWordsEl) weekWordsEl.textContent = `${stats.wordsThisWeek} word${stats.wordsThisWeek === 1 ? '' : 's'}`;
+
+    if (dailyGoalLabel) {
+        if (!goal || goal <= 0) {
+            dailyGoalLabel.textContent = 'Set a daily goal';
+        } else {
+            const remaining = Math.max(0, goal - stats.wordsToday);
+            if (remaining === 0) {
+                dailyGoalLabel.textContent = `Goal met (${goal} words)`;
+            } else {
+                dailyGoalLabel.textContent = `${stats.wordsToday}/${goal} words`;
+            }
+        }
+    }
+
+    if (lastEntryLabelEl) {
+        if (stats.latestTimestamp) {
+            lastEntryLabelEl.textContent = formatDateTime(stats.latestTimestamp);
+        } else {
+            lastEntryLabelEl.textContent = 'None yet';
+        }
+    }
+  },
+  
+  updatePagination(controls, { currentPage, totalPages }, onPageChange) {
+      if (!controls) return;
+      controls.hidden = totalPages <= 1;
+      
+      if (controls.hidden) return;
+
+      const indicator = controls.querySelector('#pageIndicator');
+      const prev = controls.querySelector('#prevPageBtn');
+      const next = controls.querySelector('#nextPageBtn');
+
+      if (indicator) indicator.textContent = `Page ${currentPage} of ${totalPages}`;
+      if (prev) {
+          prev.disabled = currentPage <= 1;
+          // Clear old listeners - dirty but simplest without re-rendering the whole control or using weakmaps
+          // A better way is to attach listener once in main and just update disabled state here.
+          // But if we want Renderer to handle it, we assume the caller handles event binding or we do it here. 
+          // Since the buttons are static in HTML, it's better to BIND events in main.js and only UPDATE state here.
+      }
+      if (next) {
+          next.disabled = currentPage >= totalPages;
+      }
+  }
+};
