@@ -1,6 +1,10 @@
 const STORAGE_KEY = 'memo_diary_entries_v1';
+const SETTINGS_KEY = 'memo_diary_settings_v1';
 
 let memos = [];
+let settings = {
+  dailyWordGoal: null,
+};
 let editingId = null;
 let activeTab = 'all'; // 'all' | 'today' | 'pinned' | 'tasks' | 'map'
 let activeMoodFilter = 'all'; // 'all' | 'great' | 'ok' | 'bad'
@@ -27,6 +31,8 @@ const weekCountEl = document.getElementById('weekCount');
 const lastEntryLabelEl = document.getElementById('lastEntryLabel');
 const todayWordsEl = document.getElementById('todayWords');
 const weekWordsEl = document.getElementById('weekWords');
+const dailyGoalChip = document.getElementById('dailyGoalChip');
+const dailyGoalLabel = document.getElementById('dailyGoalLabel');
 const todayShortcutBtn = document.getElementById('todayShortcutBtn');
 const toastEl = document.getElementById('toast');
 const currentMood = { value: null };
@@ -129,6 +135,19 @@ function loadMemos() {
     console.error('Failed to load memos', e);
     memos = [];
   }
+
+  try {
+    const settingsRaw = localStorage.getItem(SETTINGS_KEY);
+    const parsed = settingsRaw ? JSON.parse(settingsRaw) : null;
+    if (parsed && typeof parsed === 'object') {
+      settings = {
+        dailyWordGoal: parsed.dailyWordGoal ?? null,
+      };
+    }
+  } catch (e) {
+    console.error('Failed to load settings', e);
+    settings = { dailyWordGoal: null };
+  }
 }
 
 function saveMemos() {
@@ -137,6 +156,14 @@ function saveMemos() {
   } catch (e) {
     console.error('Failed to save memos', e);
     showToast('Could not save memos (storage full?)');
+  }
+}
+
+function saveSettings() {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch (e) {
+    console.error('Failed to save settings', e);
   }
 }
 
@@ -401,6 +428,23 @@ function countWords(text) {
   return normalized.split(' ').length;
 }
 
+function updateDailyGoal(wordsToday) {
+  if (!dailyGoalLabel) return;
+
+  const goal = settings.dailyWordGoal;
+  if (!goal || goal <= 0) {
+    dailyGoalLabel.textContent = 'Set a daily goal';
+    return;
+  }
+
+  const remaining = Math.max(0, goal - wordsToday);
+  if (remaining === 0) {
+    dailyGoalLabel.textContent = `Goal met (${goal} words)`;
+  } else {
+    dailyGoalLabel.textContent = `${wordsToday}/${goal} words`;
+  }
+}
+
 function updateStats() {
   if (!streakCountEl || !weekCountEl || !lastEntryLabelEl) return;
 
@@ -410,6 +454,7 @@ function updateStats() {
     lastEntryLabelEl.textContent = 'None yet';
     if (todayWordsEl) todayWordsEl.textContent = '0 words';
     if (weekWordsEl) weekWordsEl.textContent = '0 words';
+    updateDailyGoal(0);
     return;
   }
 
@@ -472,6 +517,8 @@ function updateStats() {
   if (weekWordsEl) {
     weekWordsEl.textContent = `${wordsThisWeek} word${wordsThisWeek === 1 ? '' : 's'}`;
   }
+
+  updateDailyGoal(wordsToday);
 
   if (latestTimestamp) {
     lastEntryLabelEl.textContent = formatDateTime(latestTimestamp);
@@ -936,6 +983,32 @@ function init() {
   setDatetimeToNow();
   renderMemos();
   updateStats();
+
+  if (dailyGoalChip) {
+    dailyGoalChip.addEventListener('click', () => {
+      const current = settings.dailyWordGoal || '';
+      const input = window.prompt('Daily word target (e.g. 200). Leave blank to turn off.', current ? String(current) : '');
+      if (input === null) return;
+      const trimmed = input.trim();
+      if (!trimmed) {
+        settings.dailyWordGoal = null;
+      } else {
+        const value = Number(trimmed);
+        if (!Number.isFinite(value) || value <= 0) {
+          showToast('Please enter a positive number');
+          return;
+        }
+        settings.dailyWordGoal = Math.round(value);
+      }
+      saveSettings();
+      updateStats();
+      if (settings.dailyWordGoal) {
+        showToast(`Daily goal set to ${settings.dailyWordGoal} words`);
+      } else {
+        showToast('Daily goal cleared');
+      }
+    });
+  }
 
   function setActiveTab(tab) {
     if (!tab) return;

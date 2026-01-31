@@ -287,6 +287,17 @@ body {
   justify-content: center;
 }
 
+.stat-chip-button {
+  border: none;
+  background: rgba(118, 118, 128, 0.08);
+  cursor: pointer;
+}
+
+.stat-chip-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .stat-icon {
   font-size: 13px;
 }
