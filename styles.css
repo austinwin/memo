@@ -140,7 +140,8 @@ body {
   border-top: 0.5px solid var(--separator);
   display: flex;
   align-items: flex-start;
-  justify-content: space-around;
+  justify-content: center;
+  gap: 32px;
   padding-top: 8px;
 }
 
@@ -179,9 +180,9 @@ body {
 /* ===== COMPOSE BUTTON ===== */
 .compose-fab {
   position: fixed;
-  bottom: calc(var(--nav-height) + 16px);
+  bottom: calc(var(--safe-area-bottom) + 14px);
   right: 20px;
-  z-index: 150;
+  z-index: 210;
   width: 56px;
   height: 56px;
   border-radius: 50%;
