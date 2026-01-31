@@ -9,6 +9,7 @@ A minimal, offline-first memo diary Progressive Web App (PWA).
 - ✅ Mark memos as tasks and view all open tasks in a dedicated tab
 - 🎯 Set a daily writing goal and see progress based on today's word count
 - 📈 Lightweight writing stats (streak, last entry, this week, word counts)
+- 👀 Quick view selector to jump between all entries, today, pinned, tasks, or the map
 - 📱 Installable to your phone home screen (Add to Home Screen)
 - 📶 Works offline via a service worker
 

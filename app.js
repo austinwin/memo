@@ -24,6 +24,7 @@ const textInput = document.getElementById('text');
 const memoList = document.getElementById('memoList');
 const isTodoInput = document.getElementById('isTodo');
 const sortSelect = document.getElementById('sortSelect');
+const viewSelect = document.getElementById('viewSelect');
 const searchInput = document.getElementById('searchInput');
 const todayLabel = document.getElementById('todayLabel');
 const streakCountEl = document.getElementById('streakCount');
@@ -680,14 +681,22 @@ function renderMemos() {
         locIcon.className = 'icon-btn memo-location-icon';
         locIcon.title = 'View on map';
         locIcon.textContent = memo.location.symbol || '📍';
+        // Clicking a location icon jumps straight into the map view,
+        // keeping the last non-map tab so the user can easily return.
         locIcon.addEventListener('click', () => {
           if (activeTab !== 'map') {
             lastListTab = activeTab;
           }
           activeTab = 'map';
-          document.querySelectorAll('.memo-tab').forEach((b) => {
-            b.classList.toggle('active', b.getAttribute('data-tab') === 'map');
-          });
+          if (viewSelect) {
+            viewSelect.value = 'map';
+          }
+          if (bottomNav) {
+            bottomNav.querySelectorAll('.nav-item').forEach((btn) => {
+              const nav = btn.getAttribute('data-nav');
+              btn.classList.toggle('active', nav === 'map');
+            });
+          }
           renderMemos();
           if (window.memoLocation && typeof window.memoLocation.focusMemo === 'function') {
             window.memoLocation.focusMemo(memo.id);
@@ -1016,20 +1025,16 @@ function init() {
     if (tab !== 'map') {
       lastListTab = tab;
     }
-    document.querySelectorAll('.memo-tab').forEach((b) => {
-      b.classList.toggle('active', b.getAttribute('data-tab') === tab);
-    });
+    // Keep the view dropdown in sync with the current tab
+    if (viewSelect) {
+      const nextValue = tab === 'map' ? 'map' : tab;
+      if (viewSelect.value !== nextValue) {
+        viewSelect.value = nextValue;
+      }
+    }
     currentPage = 1;
     renderMemos();
   }
-
-  // Wire up tab buttons
-  document.querySelectorAll('.memo-tab').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const tab = btn.getAttribute('data-tab');
-      setActiveTab(tab);
-    });
-  });
 
   memoForm.addEventListener('submit', handleSubmit);
   memoForm.addEventListener('reset', () => {
@@ -1048,6 +1053,22 @@ function init() {
       syncSearchInputs(searchInput.value);
       currentPage = 1;
       renderMemos();
+    });
+  }
+
+  // View selector: jump between All / Today / Pinned / Tasks / Map
+  if (viewSelect) {
+    // Ensure the dropdown reflects the initial tab when the app loads
+    viewSelect.value = activeTab;
+    viewSelect.addEventListener('change', () => {
+      const value = viewSelect.value || 'all';
+      if (value === 'map') {
+        setActiveTab('map');
+      } else if (value === 'today' || value === 'pinned' || value === 'tasks') {
+        setActiveTab(value);
+      } else {
+        setActiveTab('all');
+      }
     });
   }
 
@@ -1287,6 +1308,9 @@ function init() {
     originalSetActiveTab(tab);
     updateBottomNavState();
   };
+
+  // Make sure the bottom nav matches the initial tab
+  updateBottomNavState();
 
   window.addEventListener('resize', updateHeaderHeight);
 }
