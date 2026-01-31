@@ -477,10 +477,14 @@ function renderMemos() {
   const pageItems = filtered.slice(start, end);
 
   if (paginationControls) {
-    paginationControls.hidden = false;
-    if (pageIndicator) pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
-    if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
-    if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
+    // Only show pagination if there is more than one page
+    paginationControls.hidden = totalPages <= 1;
+    
+    if (!paginationControls.hidden) {
+      if (pageIndicator) pageIndicator.textContent = `${currentPage} / ${totalPages}`;
+      if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
+      if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
+    }
   }
 
   const dayGroups = groupMemosByDay(pageItems);
