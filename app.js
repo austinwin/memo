@@ -4,6 +4,8 @@ let memos = [];
 let editingId = null;
 let activeTab = 'all'; // 'all' | 'today' | 'pinned' | 'tasks' | 'map'
 let activeMoodFilter = 'all'; // 'all' | 'great' | 'ok' | 'bad'
+let lastListTab = 'all';
+let mapMarkerStyle = 'pin';
 let editingLocation = null;
 
 const memoForm = document.getElementById('memoForm');
@@ -12,7 +14,6 @@ const datetimeInput = document.getElementById('datetime');
 const textInput = document.getElementById('text');
 const memoList = document.getElementById('memoList');
 const isTodoInput = document.getElementById('isTodo');
-const mapViewEl = document.getElementById('mapView');
 const sortSelect = document.getElementById('sortSelect');
 const searchInput = document.getElementById('searchInput');
 const todayLabel = document.getElementById('todayLabel');
@@ -31,6 +32,13 @@ const importInput = document.getElementById('importInput');
 const mapHeaderBtn = document.getElementById('mapHeaderBtn');
 const installBtn = document.getElementById('installBtn');
 const locationSummaryEl = document.getElementById('locationSummary');
+const mapShell = document.getElementById('mapShell');
+const mapCloseBtn = document.getElementById('mapCloseBtn');
+const mapSearchInput = document.getElementById('mapSearchInput');
+const mapMarkerSelect = document.getElementById('mapMarkerSelect');
+const mapRecenterBtn = document.getElementById('mapRecenterBtn');
+const mapCountLabel = document.getElementById('mapCountLabel');
+const appHeader = document.querySelector('.app-header');
 
 function showToast(message) {
   if (!toastEl) return;
@@ -40,6 +48,12 @@ function showToast(message) {
   showToast._timeout = setTimeout(() => {
     toastEl.hidden = true;
   }, 2000);
+}
+
+function updateHeaderHeight() {
+  if (appHeader) {
+    document.documentElement.style.setProperty('--header-height', `${appHeader.offsetHeight}px`);
+  }
 }
 
 function updateTodayLabel() {
@@ -135,6 +149,36 @@ function sortMemos(list) {
   }
 
   return sorted;
+}
+
+function getMapCounts(list) {
+  let entries = 0;
+  const places = new Set();
+  for (const memo of list) {
+    const loc = memo.location;
+    if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') continue;
+    entries += 1;
+    places.add(`${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`);
+  }
+  return { entries, places: places.size };
+}
+
+function syncSearchInputs(value) {
+  if (searchInput && searchInput.value !== value) {
+    searchInput.value = value;
+  }
+  if (mapSearchInput && mapSearchInput.value !== value) {
+    mapSearchInput.value = value;
+  }
+}
+
+function setMoodFilter(mood) {
+  activeMoodFilter = mood || 'all';
+  document.querySelectorAll('[data-filter=\"mood\"]').forEach((btn) => {
+    const isActive = (btn.dataset.mood || 'all') === activeMoodFilter;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
 }
 
 function getSearchQuery() {
@@ -334,22 +378,37 @@ function updateStats() {
 function renderMemos() {
   if (!memoList) return;
 
+  const searchValue = searchInput?.value || mapSearchInput?.value || '';
+  syncSearchInputs(searchValue);
+  document.body.classList.toggle('map-mode', activeTab === 'map');
+  if (mapShell) {
+    mapShell.hidden = activeTab !== 'map';
+  }
+  updateHeaderHeight();
+
   const filtered = filterMemos(memos);
   updateStats();
 
   if (activeTab === 'map') {
     memoList.hidden = true;
-    if (mapViewEl) {
-      mapViewEl.hidden = false;
-      if (window.memoLocation && typeof window.memoLocation.renderMapView === 'function') {
-        window.memoLocation.renderMapView(memos);
+    if (window.memoLocation && typeof window.memoLocation.renderMapView === 'function') {
+      window.memoLocation.renderMapView(filtered, { markerStyle: mapMarkerStyle });
+    }
+    if (mapCountLabel) {
+      const counts = getMapCounts(filtered);
+      if (!counts.entries) {
+        mapCountLabel.textContent = 'No locations';
+      } else {
+        const placeLabel = `${counts.places} place${counts.places === 1 ? '' : 's'}`;
+        const entryLabel = `${counts.entries} entr${counts.entries === 1 ? 'y' : 'ies'}`;
+        mapCountLabel.textContent = `${placeLabel} · ${entryLabel}`;
       }
     }
     return;
   }
 
   memoList.hidden = false;
-  if (mapViewEl) mapViewEl.hidden = true;
+  if (mapShell) mapShell.hidden = true;
   memoList.innerHTML = '';
 
   if (!filtered.length) {
@@ -389,6 +448,7 @@ function renderMemos() {
 
     for (const memo of dayMemos) {
       const node = memoTemplate.content.firstElementChild.cloneNode(true);
+      node.dataset.memoId = memo.id;
       const titleEl = node.querySelector('.memo-title');
       const datetimeEl = node.querySelector('.memo-datetime');
       const textEl = node.querySelector('.memo-text');
@@ -441,6 +501,9 @@ function renderMemos() {
         locIcon.title = 'View on map';
         locIcon.textContent = '📍';
         locIcon.addEventListener('click', () => {
+          if (activeTab !== 'map') {
+            lastListTab = activeTab;
+          }
           activeTab = 'map';
           document.querySelectorAll('.memo-tab').forEach((b) => {
             b.classList.toggle('active', b.getAttribute('data-tab') === 'map');
@@ -714,23 +777,29 @@ function importMemosFromFile(file) {
 function init() {
   if (!memoForm) return;
   loadMemos();
+  updateHeaderHeight();
   updateTodayLabel();
   setDatetimeToNow();
   renderMemos();
   updateStats();
 
+  function setActiveTab(tab) {
+    if (!tab) return;
+    activeTab = tab;
+    if (tab !== 'map') {
+      lastListTab = tab;
+    }
+    document.querySelectorAll('.memo-tab').forEach((b) => {
+      b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+    });
+    renderMemos();
+  }
+
   // Wire up tab buttons
   document.querySelectorAll('.memo-tab').forEach((btn) => {
     btn.addEventListener('click', () => {
       const tab = btn.getAttribute('data-tab');
-      if (!tab) return;
-      activeTab = tab;
-
-      document.querySelectorAll('.memo-tab').forEach((b) => {
-        b.classList.toggle('active', b === btn);
-      });
-
-      renderMemos();
+      setActiveTab(tab);
     });
   });
 
@@ -745,6 +814,14 @@ function init() {
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
+      syncSearchInputs(searchInput.value);
+      renderMemos();
+    });
+  }
+
+  if (mapSearchInput) {
+    mapSearchInput.addEventListener('input', () => {
+      syncSearchInputs(mapSearchInput.value);
       renderMemos();
     });
   }
@@ -767,16 +844,11 @@ function init() {
     });
   });
 
-  // Mood filter chips for the list (All / 😊 / 😐 / 😞)
-  document.querySelectorAll('.mood-filter-btn').forEach((btn) => {
+  // Mood filter chips for list and map
+  document.querySelectorAll('[data-filter=\"mood\"]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const mood = btn.dataset.mood;
-      activeMoodFilter = mood || 'all';
-
-      document.querySelectorAll('.mood-filter-btn').forEach((b) => {
-        b.classList.toggle('active', b === btn);
-      });
-
+      setMoodFilter(mood);
       renderMemos();
     });
   });
@@ -786,11 +858,7 @@ function init() {
   }
 
   function goToMapView() {
-    activeTab = 'map';
-    document.querySelectorAll('.memo-tab').forEach((b) => {
-      b.classList.toggle('active', b.getAttribute('data-tab') === 'map');
-    });
-    renderMemos();
+    setActiveTab('map');
   }
 
   if (mapHeaderBtn) {
@@ -802,6 +870,34 @@ function init() {
     installBtn.textContent = 'Map view';
     installBtn.addEventListener('click', goToMapView);
   }
+
+  if (mapCloseBtn) {
+    mapCloseBtn.addEventListener('click', () => {
+      setActiveTab(lastListTab || 'all');
+    });
+  }
+
+  if (mapMarkerSelect) {
+    mapMarkerSelect.addEventListener('change', () => {
+      mapMarkerStyle = mapMarkerSelect.value || 'pin';
+      if (window.memoLocation && typeof window.memoLocation.setMapMarkerStyle === 'function') {
+        window.memoLocation.setMapMarkerStyle(mapMarkerStyle);
+      }
+      if (activeTab === 'map') {
+        renderMemos();
+      }
+    });
+  }
+
+  if (mapRecenterBtn) {
+    mapRecenterBtn.addEventListener('click', () => {
+      if (window.memoLocation && typeof window.memoLocation.fitToMarkers === 'function') {
+        window.memoLocation.fitToMarkers();
+      }
+    });
+  }
+
+  setMoodFilter(activeMoodFilter);
 
   if (window.memoLocation) {
     window.memoLocation.formatDateTime = formatDateTime;
@@ -835,6 +931,8 @@ function init() {
       }
     });
   }
+
+  window.addEventListener('resize', updateHeaderHeight);
 }
 
 window.addEventListener('DOMContentLoaded', init);

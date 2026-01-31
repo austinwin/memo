@@ -3,17 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Memo Diary</title>
+  <title>Journal</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0f766e" />
+  <meta name="theme-color" content="#eef2f6" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
-    <h1>Memo Diary</h1>
+    <div class="header-title">
+      <h1>Journal</h1>
+      <p class="header-subtitle">Capture moments, reflect, and plan.</p>
+    </div>
     <div class="header-actions">
       <input id="importInput" type="file" accept="application/json" hidden />
-      <button id="mapHeaderBtn" class="btn secondary" type="button">Map view</button>
+      <button id="mapHeaderBtn" class="btn secondary" type="button">Open map</button>
       <button id="importBtn" class="btn secondary" type="button">Import</button>
       <button id="exportBtn" class="btn secondary" type="button">Export</button>
     </div>
@@ -23,22 +26,22 @@
     <section class="memo-form-section">
       <header class="memo-form-header">
         <div>
-          <h2>Today</h2>
+          <h2>New entry</h2>
           <p id="todayLabel" class="today-label"></p>
         </div>
-        <button id="todayShortcutBtn" class="btn secondary" type="button">
-          New entry for today
-        </button>
+        <button id="todayShortcutBtn" class="btn secondary" type="button">Jump to now</button>
       </header>
-      <form id="memoForm">
-        <label>
-          Title
-          <input type="text" id="title" name="title" required maxlength="100" />
-        </label>
-        <label>
-          Date & Time
-          <input type="datetime-local" id="datetime" name="datetime" />
-        </label>
+      <form id="memoForm" class="memo-form">
+        <div class="form-row">
+          <label>
+            Title
+            <input type="text" id="title" name="title" required maxlength="100" />
+          </label>
+          <label>
+            Date & Time
+            <input type="datetime-local" id="datetime" name="datetime" />
+          </label>
+        </div>
         <label>
           Text
           <textarea id="text" name="text" rows="5" required placeholder="What stood out about today?"></textarea>
@@ -62,7 +65,7 @@
             <button type="button" class="mood-btn" data-mood="bad">😞</button>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn primary">Save Memo</button>
+            <button type="submit" class="btn primary">Save entry</button>
             <button type="reset" class="btn">Clear</button>
           </div>
         </div>
@@ -71,27 +74,40 @@
 
     <section class="memo-list-section">
       <div class="memo-list-header">
-        <h2>Your Memos</h2>
+        <div class="memo-list-title">
+          <h2>Your entries</h2>
+          <p class="memo-list-subtitle">A calm place for your recent memories.</p>
+        </div>
         <div class="memo-list-controls">
-          <nav class="memo-tabs" aria-label="Filter memos">
-            <button class="memo-tab active" data-tab="all" type="button">All</button>
-            <button class="memo-tab" data-tab="today" type="button">Today</button>
-            <button class="memo-tab" data-tab="pinned" type="button">Pinned</button>
-            <button class="memo-tab" data-tab="tasks" type="button">Tasks</button>
-            <button class="memo-tab" data-tab="map" type="button">Map</button>
-          </nav>
-          <div class="memo-search-group">
-            <input
-              id="searchInput"
-              class="search-input"
-              type="search"
-              placeholder="Search memos"
-              aria-label="Search memos"
-            />
+          <div class="memo-controls-row">
+            <nav class="memo-tabs" aria-label="Filter memos">
+              <button class="memo-tab active" data-tab="all" type="button">All</button>
+              <button class="memo-tab" data-tab="today" type="button">Today</button>
+              <button class="memo-tab" data-tab="pinned" type="button">Pinned</button>
+              <button class="memo-tab" data-tab="tasks" type="button">Tasks</button>
+              <button class="memo-tab" data-tab="map" type="button">Map</button>
+            </nav>
+            <select id="sortSelect" class="sort-select">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="title">Title A–Z</option>
+            </select>
+          </div>
+          <div class="memo-controls-row">
+            <div class="memo-search-group">
+              <input
+                id="searchInput"
+                class="search-input"
+                type="search"
+                placeholder="Search entries"
+                aria-label="Search entries"
+              />
+            </div>
             <div class="mood-filter" aria-label="Filter by mood" role="radiogroup">
               <button
                 type="button"
                 class="mood-filter-btn active"
+                data-filter="mood"
                 data-mood="all"
                 role="radio"
                 aria-pressed="true"
@@ -99,6 +115,7 @@
               <button
                 type="button"
                 class="mood-filter-btn"
+                data-filter="mood"
                 data-mood="great"
                 role="radio"
                 aria-pressed="false"
@@ -106,6 +123,7 @@
               <button
                 type="button"
                 class="mood-filter-btn"
+                data-filter="mood"
                 data-mood="ok"
                 role="radio"
                 aria-pressed="false"
@@ -113,17 +131,13 @@
               <button
                 type="button"
                 class="mood-filter-btn"
+                data-filter="mood"
                 data-mood="bad"
                 role="radio"
                 aria-pressed="false"
               >😞</button>
             </div>
           </div>
-          <select id="sortSelect" class="sort-select">
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="title">Title A–Z</option>
-          </select>
         </div>
       </div>
       <section class="memo-stats" aria-label="Writing statistics">
@@ -149,7 +163,66 @@
         </p>
       </section>
       <div id="memoList" class="memo-list"></div>
-      <div id="mapView" class="map-view" hidden></div>
+      <div id="mapShell" class="map-shell" hidden>
+        <div id="mapToolbar" class="map-toolbar">
+          <div class="map-toolbar-group map-toolbar-left">
+            <button id="mapCloseBtn" class="btn ghost" type="button">Back to list</button>
+            <span id="mapCountLabel" class="map-count">0 places</span>
+          </div>
+          <div class="map-toolbar-group map-toolbar-center">
+            <input
+              id="mapSearchInput"
+              class="map-search-input"
+              type="search"
+              placeholder="Search on map"
+              aria-label="Search map entries"
+            />
+          </div>
+          <div class="map-toolbar-group map-toolbar-right">
+            <div class="map-filter" aria-label="Filter map by mood" role="radiogroup">
+              <button
+                type="button"
+                class="mood-filter-btn map-filter-btn active"
+                data-filter="mood"
+                data-mood="all"
+                role="radio"
+                aria-pressed="true"
+              >All</button>
+              <button
+                type="button"
+                class="mood-filter-btn map-filter-btn"
+                data-filter="mood"
+                data-mood="great"
+                role="radio"
+                aria-pressed="false"
+              >😊</button>
+              <button
+                type="button"
+                class="mood-filter-btn map-filter-btn"
+                data-filter="mood"
+                data-mood="ok"
+                role="radio"
+                aria-pressed="false"
+              >😐</button>
+              <button
+                type="button"
+                class="mood-filter-btn map-filter-btn"
+                data-filter="mood"
+                data-mood="bad"
+                role="radio"
+                aria-pressed="false"
+              >😞</button>
+            </div>
+            <select id="mapMarkerSelect" class="map-marker-select" aria-label="Map symbol style">
+              <option value="pin">Pins</option>
+              <option value="dot">Dots</option>
+              <option value="emoji">Emoji</option>
+            </select>
+            <button id="mapRecenterBtn" class="btn ghost" type="button">Recenter</button>
+          </div>
+        </div>
+        <div id="mapView" class="map-view"></div>
+      </div>
     </section>
   </main>
 

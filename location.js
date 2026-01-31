@@ -14,6 +14,9 @@
   let pickerMarker = null;
   let currentLocation = null;
   let mapViewMap = null;
+  let lastRenderedMemos = [];
+  let lastBounds = null;
+  let markerStyle = 'pin';
 
   function ensureLeaflet() {
     if (typeof L === 'undefined') {
@@ -201,13 +204,59 @@
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(mapViewMap);
-    } else {
-      setTimeout(() => mapViewMap.invalidateSize(), 0);
     }
+    setTimeout(() => mapViewMap.invalidateSize(), 0);
     return mapViewMap;
   }
 
-  function renderMapView(memos) {
+  function getMoodTone(memoList) {
+    const moods = new Set(
+      memoList.map((memo) => memo.mood).filter((mood) => !!mood)
+    );
+    if (moods.size === 0) return 'neutral';
+    if (moods.size > 1) return 'mixed';
+    if (moods.has('great')) return 'great';
+    if (moods.has('ok')) return 'ok';
+    if (moods.has('bad')) return 'bad';
+    return 'neutral';
+  }
+
+  function getMoodEmoji(tone) {
+    if (tone === 'great') return '😊';
+    if (tone === 'ok') return '😐';
+    if (tone === 'bad') return '😞';
+    return '•';
+  }
+
+  function createMarkerIcon(memoList) {
+    const count = memoList.length;
+    const tone = getMoodTone(memoList);
+    const style = markerStyle || 'pin';
+    let label = '';
+
+    if (count > 1) {
+      label = String(count);
+    } else if (style === 'emoji') {
+      label = getMoodEmoji(tone);
+    }
+
+    const size = style === 'dot' ? 22 : 34;
+    const anchor = [size / 2, size / 2];
+
+    return L.divIcon({
+      className: `memo-map-marker memo-map-marker--${style} memo-map-marker--${tone}`,
+      html: `<div class=\"memo-map-marker__inner\">${label}</div>`,
+      iconSize: [size, size],
+      iconAnchor: anchor,
+      popupAnchor: [0, -size / 2],
+    });
+  }
+
+  function renderMapView(memos, options = {}) {
+    if (options.markerStyle) {
+      markerStyle = options.markerStyle;
+    }
+    lastRenderedMemos = Array.isArray(memos) ? memos : [];
     const map = ensureMapView();
     if (!map) return;
 
@@ -220,7 +269,7 @@
 
     const clusters = new Map();
 
-    for (const memo of memos) {
+    for (const memo of lastRenderedMemos) {
       const loc = memo.location;
       if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') continue;
       const key = `${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`;
@@ -234,7 +283,9 @@
       const [latStr, lngStr] = key.split(',');
       const lat = parseFloat(latStr);
       const lng = parseFloat(lngStr);
-      const marker = L.marker([lat, lng]).addTo(map);
+      const marker = L.marker([lat, lng], {
+        icon: createMarkerIcon(memoList),
+      }).addTo(map);
       bounds.push([lat, lng]);
 
       marker.on('click', () => {
@@ -309,7 +360,10 @@
     });
 
     if (bounds.length) {
-      map.fitBounds(bounds, { padding: [20, 20] });
+      lastBounds = L.latLngBounds(bounds);
+      map.fitBounds(lastBounds, { padding: [20, 20] });
+    } else {
+      lastBounds = null;
     }
   }
 
@@ -317,6 +371,20 @@
   window.memoLocation.updateLocationSummary = updateLocationSummary;
   window.memoLocation.initLocationPicker = initLocationPicker;
   window.memoLocation.renderMapView = renderMapView;
+  window.memoLocation.setMapMarkerStyle = function (style) {
+    markerStyle = style || 'pin';
+    if (mapViewMap && lastRenderedMemos.length) {
+      renderMapView(lastRenderedMemos);
+    }
+  };
+  window.memoLocation.fitToMarkers = function () {
+    if (!mapViewMap) return;
+    if (lastBounds) {
+      mapViewMap.fitBounds(lastBounds, { padding: [20, 20] });
+    } else {
+      mapViewMap.setView([20, 0], 2);
+    }
+  };
   window.memoLocation.setCurrentEditingLocation = function (loc) {
     currentLocation = loc ? { ...loc } : null;
     if (locationLabelInput) {

@@ -1,10 +1,10 @@
 {
-  "name": "Memo Diary",
-  "short_name": "Memo",
+  "name": "Journal",
+  "short_name": "Journal",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#0f766e",
+  "background_color": "#f2f4f7",
+  "theme_color": "#eef2f6",
   "icons": [
     {
       "src": "icons/icon-192.png",
