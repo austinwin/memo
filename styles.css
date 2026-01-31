@@ -116,6 +116,10 @@ body {
   flex-shrink: 0;
 }
 
+.desktop-view-toggle {
+  display: none;
+}
+
 /* ===== MAIN CONTENT ===== */
 .app-main {
   max-width: 680px;
@@ -1337,10 +1341,43 @@ body.map-mode .memo-list-section {
   
   .app-header {
     padding: 16px 24px;
+    z-index: 600; /* Ensure header stays above map */
+  }
+
+  .desktop-view-toggle {
+    display: flex;
+    background: rgba(118, 118, 128, 0.12);
+    padding: 2px;
+    border-radius: 9px;
+    margin-right: 16px;
+  }
+  
+  .view-toggle-btn {
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .view-toggle-btn:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .view-toggle-btn.active {
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    color: var(--text);
+    font-weight: 600;
   }
   
   .header-content {
-    max-width: 900px;
+    max-width: 1200px; /* Wider header for desktop */
   }
   
   .header-subtitle {
@@ -1360,22 +1397,67 @@ body.map-mode .memo-list-section {
   }
   
   .app-main {
-    max-width: 900px;
-    padding: 24px;
+    max-width: 1000px; /* Wider width */
+    padding: 32px 24px;
     display: grid;
-    grid-template-columns: 400px 1fr;
-    gap: 24px;
+    grid-template-columns: 380px 1fr;
+    gap: 32px;
     align-items: start;
+  }
+
+  /* Make map respect header on desktop */
+  .map-shell {
+    top: 0; /* Will be covered by header z-index */
+    padding-top: calc(73px + 20px); /* Header height approx + padding */
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+    background: var(--bg);
+    z-index: 50;
+  }
+  
+  /* Map toolbar on desktop should be inside the shell but positioned nicely */
+  .map-toolbar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    width: auto;
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    background: rgba(255, 255, 255, 0.9);
+    max-width: 400px;
+  }
+
+  .map-view {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    height: 100%;
+    border: 1px solid var(--border);
+  }
+
+  body.map-mode .map-shell {
+    display: block;
+    position: fixed;
+    inset: 0;
+    top: 88px; /* Header height approx */
+    height: calc(100vh - 88px);
+    z-index: 50;
   }
   
   .memo-form-section {
     display: block;
-    position: relative;
+    position: sticky; /* Keep form visible while scrolling list */
+    top: 100px;
     inset: auto;
     background: var(--bg-secondary);
     border-radius: var(--radius-lg);
     animation: none;
     box-shadow: var(--shadow);
+    height: auto;
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
   }
   
   .memo-form-section.visible {

@@ -86,6 +86,7 @@ const elements = {
   composeFab: document.getElementById('composeFab'),
   composeSection: document.getElementById('composeSection'),
   bottomNav: document.getElementById('bottomNav'),
+  viewToggleBtns: document.querySelectorAll('.view-toggle-btn'), // Desktop toggle
   exportBtn: document.getElementById('exportBtn'),
   importBtn: document.getElementById('importBtn'),
   importInput: document.getElementById('importInput'),
@@ -258,6 +259,18 @@ function render() {
   document.body.classList.toggle('map-mode', state.view.activeTab === 'map');
   if (elements.mapShell) elements.mapShell.hidden = state.view.activeTab !== 'map';
   if (elements.memoList) elements.memoList.hidden = state.view.activeTab === 'map';
+  
+  // Connect toggle buttons
+  elements.viewToggleBtns?.forEach(btn => {
+      const view = btn.dataset.view;
+      const isMap = state.view.activeTab === 'map';
+      if (view === 'map') {
+        btn.classList.toggle('active', isMap);
+      } else {
+        btn.classList.toggle('active', !isMap);
+      }
+  });
+
   syncSearchInputs();
   if (elements.viewSelect && elements.viewSelect.value !== state.view.activeTab) {
     elements.viewSelect.value = state.view.activeTab;
@@ -574,6 +587,33 @@ function bindEvents() {
         Storage.saveSettings(state.settings);
         render();
         showToast('Daily goal updated');
+    });
+
+    // Desktop View Toggle
+    elements.viewToggleBtns?.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const view = btn.dataset.view;
+            if (view === 'map') {
+                if (state.view.activeTab !== 'map') state.map.lastListTab = state.view.activeTab;
+                state.view.activeTab = 'map';
+            } else {
+                // If switching to list, check if we were in map
+                // If currently 'map', go to last tab or 'all'
+                // But simplified: user clicked "List", so go to "all" (or keep current if not map?)
+                // Actually the tabs are "List" and "Map".
+                // If I am in "Today" filter, clicking "List" should probably keep me in "Today"?
+                // If I am in "Map", clicking "List" should go back to last non-map tab.
+                if (state.view.activeTab === 'map') {
+                     state.view.activeTab = (state.map.lastListTab && state.map.lastListTab !== 'map') ? state.map.lastListTab : 'all';
+                }
+                // If already in list mode, do nothing or maybe reset to 'all'?
+                // Let's keep it simple: Ensure we are not in map.
+            }
+            if (elements.viewSelect) elements.viewSelect.value = state.view.activeTab;
+            updateBottomNav(view === 'map' ? 'map' : 'all');
+            state.view.currentPage = 1;
+            render();
+        });
     });
     
     // Export/Import
