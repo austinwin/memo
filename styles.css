@@ -944,25 +944,36 @@ textarea {
 }
 
 .map-timeline-bar {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding: 6px 10px;
+  gap: 6px;
+  padding: 8px 6px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.85);
   color: var(--text-secondary);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
+  pointer-events: auto;
 }
 
 .map-timeline-label {
-  font-size: 12px;
+  font-size: 11px;
   white-space: nowrap;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
 }
 
 .map-timeline-slider {
-  flex: 1;
+  appearance: none;
+  width: 120px;
+  height: 24px;
+  transform: rotate(-90deg);
+  transform-origin: center;
 }
 
 /* Glass Inputs/Buttons */
