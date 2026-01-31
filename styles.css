@@ -239,6 +239,17 @@ body {
   gap: 8px;
 }
 
+@media (max-width: 400px) {
+  .secondary-controls {
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: auto;
+  }
+
+  .secondary-controls select:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
 /* Compact Filters (Selects) */
 .filter-select {
   padding: 8px 12px;
@@ -265,6 +276,7 @@ body {
 /* Minimal Stats Bar (Chips) */
 .memo-stats {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 8px;
   padding: 0 16px;
@@ -283,7 +295,7 @@ body {
   font-size: 13px;
   color: var(--text-secondary);
   font-weight: 500;
-  flex: 1;
+  flex: 1 1 calc(50% - 8px);
   justify-content: center;
 }
 
@@ -929,6 +941,7 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
 }
 
 .map-header-row {
@@ -956,14 +969,14 @@ textarea {
 
 .map-timeline-bar {
   position: absolute;
-  left: 12px;
+  left: 8px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: 8px 6px;
+  padding: 6px 4px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.85);
   color: var(--text-secondary);
@@ -973,7 +986,7 @@ textarea {
 }
 
 .map-timeline-label {
-  font-size: 11px;
+  font-size: 10px;
   white-space: nowrap;
   writing-mode: vertical-rl;
   text-orientation: mixed;
@@ -985,6 +998,16 @@ textarea {
   height: 24px;
   transform: rotate(-90deg);
   transform-origin: center;
+}
+
+@media (max-width: 400px) {
+  .map-timeline-bar {
+    left: 4px;
+  }
+
+  .map-timeline-slider {
+    width: 100px;
+  }
 }
 
 /* Glass Inputs/Buttons */
