@@ -1,16 +1,16 @@
 let deferredPrompt;
-const installBtn = document.getElementById('installBtn');
+const pwaInstallBtn = document.getElementById('installBtn');
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  if (installBtn) {
-    installBtn.hidden = false;
+  if (pwaInstallBtn) {
+    pwaInstallBtn.hidden = false;
   }
 });
 
-if (installBtn) {
-  installBtn.addEventListener('click', async () => {
+if (pwaInstallBtn) {
+  pwaInstallBtn.addEventListener('click', async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -18,7 +18,7 @@ if (installBtn) {
       console.log('User accepted A2HS');
     }
     deferredPrompt = null;
-    installBtn.hidden = true;
+    pwaInstallBtn.hidden = true;
   });
 }
 

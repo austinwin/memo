@@ -2,71 +2,79 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Journal</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#eef2f6" />
+  <meta name="theme-color" content="#f2f2f7" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="app-header">
-    <div class="header-title">
-      <h1>Journal</h1>
-      <p class="header-subtitle">Capture moments, reflect, and plan.</p>
-    </div>
-    <div class="header-actions">
-      <input id="importInput" type="file" accept="application/json" hidden />
-      <button id="mapHeaderBtn" class="btn secondary" type="button">Open map</button>
-      <button id="importBtn" class="btn secondary" type="button">Import</button>
-      <button id="exportBtn" class="btn secondary" type="button">Export</button>
+    <div class="header-content">
+      <div class="header-title">
+        <h1>Journal</h1>
+        <p class="header-subtitle">Your daily reflections</p>
+      </div>
+      <div class="header-actions">
+        <input id="importInput" type="file" accept="application/json" hidden />
+        <button id="importBtn" class="btn header-icon-btn" type="button" title="Import">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button id="exportBtn" class="btn header-icon-btn" type="button" title="Export">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 
   <main class="app-main">
-    <section class="memo-form-section">
+    <section class="memo-form-section" id="composeSection">
       <header class="memo-form-header">
+        <button type="button" class="form-close-btn" id="formCloseBtn">Cancel</button>
         <div>
-          <h2>New entry</h2>
+          <h2>New Entry</h2>
           <p id="todayLabel" class="today-label"></p>
         </div>
-        <button id="todayShortcutBtn" class="btn secondary" type="button">Jump to now</button>
+        <button id="todayShortcutBtn" class="form-close-btn" type="button">Now</button>
       </header>
       <form id="memoForm" class="memo-form">
         <div class="form-row">
           <label>
             Title
-            <input type="text" id="title" name="title" required maxlength="100" />
+            <input type="text" id="title" name="title" required maxlength="100" placeholder="What's on your mind?" />
           </label>
           <label>
-            Date & Time
+            Date &amp; Time
             <input type="datetime-local" id="datetime" name="datetime" />
           </label>
         </div>
         <label>
-          Text
-          <textarea id="text" name="text" rows="5" required placeholder="What stood out about today?"></textarea>
+          Entry
+          <textarea id="text" name="text" rows="5" required placeholder="Write about your day, thoughts, or anything you want to remember..."></textarea>
         </label>
-        <label class="todo-toggle">
-          <span class="todo-toggle-label">Task</span>
-          <span class="todo-toggle-help">Treat this memo as a to‑do you want to track.</span>
+        <div class="todo-toggle">
+          <span class="todo-toggle-label">Track as Task</span>
+          <span class="todo-toggle-help">Treat this memo as a to-do you want to track.</span>
           <div class="todo-toggle-control">
             <input type="checkbox" id="isTodo" name="isTodo" />
             <span>Track as task</span>
           </div>
-        </label>
+        </div>
         <div class="form-location-row">
-          <button type="button" id="locationBtn" class="btn secondary">Add location</button>
+          <button type="button" id="locationBtn" class="btn secondary">📍 Add Location</button>
           <p id="locationSummary" class="location-summary" hidden></p>
         </div>
         <div class="form-mood-row">
-          <div class="mood-picker" aria-label="Select mood for this entry">
-            <button type="button" class="mood-btn" data-mood="great">😊</button>
-            <button type="button" class="mood-btn" data-mood="ok">😐</button>
-            <button type="button" class="mood-btn" data-mood="bad">😞</button>
+          <div class="mood-picker" aria-label="How are you feeling?">
+            <button type="button" class="mood-btn" data-mood="great" title="Great">😊</button>
+            <button type="button" class="mood-btn" data-mood="ok" title="Okay">😐</button>
+            <button type="button" class="mood-btn" data-mood="bad" title="Not great">😞</button>
           </div>
           <div class="form-actions">
-            <button type="submit" class="btn primary">Save entry</button>
             <button type="reset" class="btn">Clear</button>
+            <button type="submit" class="btn primary">Save Entry</button>
           </div>
         </div>
       </form>
@@ -75,178 +83,122 @@
     <section class="memo-list-section">
       <div class="memo-list-header">
         <div class="memo-list-title">
-          <h2>Your entries</h2>
-          <p class="memo-list-subtitle">A calm place for your recent memories.</p>
+          <h2>Your Entries</h2>
+          <p class="memo-list-subtitle">A calm space for your memories</p>
         </div>
-        <div class="memo-list-controls">
-          <div class="memo-controls-row">
-            <nav class="memo-tabs" aria-label="Filter memos">
-              <button class="memo-tab active" data-tab="all" type="button">All</button>
-              <button class="memo-tab" data-tab="today" type="button">Today</button>
-              <button class="memo-tab" data-tab="pinned" type="button">Pinned</button>
-              <button class="memo-tab" data-tab="tasks" type="button">Tasks</button>
-              <button class="memo-tab" data-tab="map" type="button">Map</button>
-            </nav>
-            <select id="sortSelect" class="sort-select">
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-              <option value="title">Title A–Z</option>
-            </select>
+      </div>
+      <div class="memo-list-controls">
+        <div class="memo-controls-row">
+          <div class="memo-search-group">
+            <input
+              id="searchInput"
+              class="search-input"
+              type="search"
+              placeholder="Search entries..."
+              aria-label="Search entries"
+            />
           </div>
-          <div class="memo-controls-row">
-            <div class="memo-search-group">
-              <input
-                id="searchInput"
-                class="search-input"
-                type="search"
-                placeholder="Search entries"
-                aria-label="Search entries"
-              />
-            </div>
-            <div class="mood-filter" aria-label="Filter by mood" role="radiogroup">
-              <button
-                type="button"
-                class="mood-filter-btn active"
-                data-filter="mood"
-                data-mood="all"
-                role="radio"
-                aria-pressed="true"
-              >All moods</button>
-              <button
-                type="button"
-                class="mood-filter-btn"
-                data-filter="mood"
-                data-mood="great"
-                role="radio"
-                aria-pressed="false"
-              >😊</button>
-              <button
-                type="button"
-                class="mood-filter-btn"
-                data-filter="mood"
-                data-mood="ok"
-                role="radio"
-                aria-pressed="false"
-              >😐</button>
-              <button
-                type="button"
-                class="mood-filter-btn"
-                data-filter="mood"
-                data-mood="bad"
-                role="radio"
-                aria-pressed="false"
-              >😞</button>
-            </div>
+        </div>
+        <div class="memo-controls-row">
+          <nav class="memo-tabs" aria-label="Filter memos">
+            <button class="memo-tab active" data-tab="all" type="button">All</button>
+            <button class="memo-tab" data-tab="today" type="button">Today</button>
+            <button class="memo-tab" data-tab="pinned" type="button">Pinned</button>
+            <button class="memo-tab" data-tab="tasks" type="button">Tasks</button>
+          </nav>
+          <select id="sortSelect" class="sort-select">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="title">A-Z</option>
+          </select>
+        </div>
+        <div class="memo-controls-row">
+          <div class="mood-filter" aria-label="Filter by mood" role="radiogroup">
+            <button type="button" class="mood-filter-btn active" data-filter="mood" data-mood="all" role="radio" aria-pressed="true">All</button>
+            <button type="button" class="mood-filter-btn" data-filter="mood" data-mood="great" role="radio" aria-pressed="false">😊</button>
+            <button type="button" class="mood-filter-btn" data-filter="mood" data-mood="ok" role="radio" aria-pressed="false">😐</button>
+            <button type="button" class="mood-filter-btn" data-filter="mood" data-mood="bad" role="radio" aria-pressed="false">😞</button>
           </div>
         </div>
       </div>
       <section class="memo-stats" aria-label="Writing statistics">
         <p class="memo-stats-item">
           <span class="memo-stats-label">Streak</span>
-          <span id="streakCount" class="memo-stats-value">0 days</span>
+          <span id="streakCount" class="memo-stats-value">0</span>
         </p>
         <p class="memo-stats-item">
-          <span class="memo-stats-label">This week</span>
-          <span id="weekCount" class="memo-stats-value">0 entries</span>
+          <span class="memo-stats-label">This Week</span>
+          <span id="weekCount" class="memo-stats-value">0</span>
         </p>
         <p class="memo-stats-item">
-          <span class="memo-stats-label">Today's words</span>
-          <span id="todayWords" class="memo-stats-value">0 words</span>
+          <span class="memo-stats-label">Today</span>
+          <span id="todayWords" class="memo-stats-value">0</span>
         </p>
         <p class="memo-stats-item">
-          <span class="memo-stats-label">This week's words</span>
-          <span id="weekWords" class="memo-stats-value">0 words</span>
-        </p>
-        <p class="memo-stats-item">
-          <span class="memo-stats-label">Last entry</span>
-          <span id="lastEntryLabel" class="memo-stats-value">None yet</span>
+          <span class="memo-stats-label">Week Words</span>
+          <span id="weekWords" class="memo-stats-value">0</span>
         </p>
       </section>
       <div id="memoList" class="memo-list"></div>
-      <div id="mapShell" class="map-shell" hidden>
-        <div id="mapToolbar" class="map-toolbar">
-          <div class="map-toolbar-group map-toolbar-left">
-            <button id="mapCloseBtn" class="btn ghost" type="button">Back to list</button>
-            <span id="mapCountLabel" class="map-count">0 places</span>
-          </div>
-          <div class="map-toolbar-group map-toolbar-center">
-            <input
-              id="mapSearchInput"
-              class="map-search-input"
-              type="search"
-              placeholder="Search on map"
-              aria-label="Search map entries"
-            />
-          </div>
-          <div class="map-toolbar-group map-toolbar-right">
-            <div class="map-filter" aria-label="Filter map by mood" role="radiogroup">
-              <button
-                type="button"
-                class="mood-filter-btn map-filter-btn active"
-                data-filter="mood"
-                data-mood="all"
-                role="radio"
-                aria-pressed="true"
-              >All</button>
-              <button
-                type="button"
-                class="mood-filter-btn map-filter-btn"
-                data-filter="mood"
-                data-mood="great"
-                role="radio"
-                aria-pressed="false"
-              >😊</button>
-              <button
-                type="button"
-                class="mood-filter-btn map-filter-btn"
-                data-filter="mood"
-                data-mood="ok"
-                role="radio"
-                aria-pressed="false"
-              >😐</button>
-              <button
-                type="button"
-                class="mood-filter-btn map-filter-btn"
-                data-filter="mood"
-                data-mood="bad"
-                role="radio"
-                aria-pressed="false"
-              >😞</button>
-            </div>
-            <select id="mapMarkerSelect" class="map-marker-select" aria-label="Map symbol style">
-              <option value="pin">Pins</option>
-              <option value="dot">Dots</option>
-              <option value="emoji">Emoji</option>
-            </select>
-            <button id="mapRecenterBtn" class="btn ghost" type="button">Recenter</button>
-          </div>
-        </div>
-        <div id="mapView" class="map-view"></div>
-      </div>
     </section>
   </main>
+
+  <div id="mapShell" class="map-shell" hidden>
+    <div id="mapToolbar" class="map-toolbar">
+      <div class="map-toolbar-group map-toolbar-left">
+        <button id="mapCloseBtn" class="btn ghost" type="button">Back</button>
+        <span id="mapCountLabel" class="map-count">0 places</span>
+      </div>
+      <div class="map-toolbar-group map-toolbar-center">
+        <input id="mapSearchInput" class="map-search-input" type="search" placeholder="Search locations..." aria-label="Search map entries" />
+      </div>
+      <div class="map-toolbar-group map-toolbar-right">
+        <div class="map-filter" aria-label="Filter map by mood" role="radiogroup">
+          <button type="button" class="mood-filter-btn map-filter-btn active" data-filter="mood" data-mood="all" role="radio" aria-pressed="true">All</button>
+          <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="great" role="radio" aria-pressed="false">😊</button>
+          <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="ok" role="radio" aria-pressed="false">😐</button>
+          <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="bad" role="radio" aria-pressed="false">😞</button>
+        </div>
+        <select id="mapMarkerSelect" class="map-marker-select" aria-label="Map symbol style">
+          <option value="pin">Pins</option>
+          <option value="dot">Dots</option>
+          <option value="emoji">Emoji</option>
+        </select>
+        <button id="mapRecenterBtn" class="btn ghost" type="button">⟲</button>
+      </div>
+    </div>
+    <div id="mapView" class="map-view"></div>
+  </div>
+
+  <button class="compose-fab" id="composeFab" type="button" aria-label="New entry">+</button>
+
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-nav="entries" type="button">
+      <span class="nav-icon">📝</span>
+      <span>Entries</span>
+    </button>
+    <button class="nav-item" data-nav="map" type="button">
+      <span class="nav-icon">🗺️</span>
+      <span>Map</span>
+    </button>
+  </nav>
 
   <div id="locationModal" class="modal" hidden>
     <div class="modal-content">
       <header class="modal-header">
-        <h3>Select location</h3>
+        <h3>Add Location</h3>
         <button type="button" id="locationModalClose" class="icon-btn">✕</button>
       </header>
       <div class="modal-body">
         <div id="locationMap" class="location-map"></div>
         <div class="location-controls">
-          <button type="button" id="useCurrentLocationBtn" class="btn secondary">Use my current location</button>
-          <input
-            type="text"
-            id="locationLabelInput"
-            class="location-label-input"
-            placeholder="Label (Home, Office, Café...)"
-          />
+          <button type="button" id="useCurrentLocationBtn" class="btn secondary">📍 Use Current Location</button>
+          <input type="text" id="locationLabelInput" class="location-label-input" placeholder="Label (Home, Office, Cafe...)" />
         </div>
       </div>
       <footer class="modal-footer">
         <button type="button" id="locationClearBtn" class="btn">Remove</button>
-        <button type="button" id="locationSaveBtn" class="btn primary">Save</button>
+        <button type="button" id="locationSaveBtn" class="btn primary">Save Location</button>
       </footer>
     </div>
   </div>
@@ -276,17 +228,8 @@
 
   <div id="toast" class="toast" hidden></div>
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-  />
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="location.js"></script>
   <script src="app.js"></script>
   <script src="pwa.js"></script>

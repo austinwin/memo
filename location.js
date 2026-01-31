@@ -199,13 +199,26 @@
     if (!mapViewEl) return null;
     if (!ensureLeaflet()) return null;
     if (!mapViewMap) {
-      mapViewMap = L.map(mapViewEl).setView([20, 0], 2);
+      mapViewMap = L.map(mapViewEl, {
+        zoomControl: true,
+        attributionControl: true
+      }).setView([20, 0], 2);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors',
       }).addTo(mapViewMap);
     }
-    setTimeout(() => mapViewMap.invalidateSize(), 0);
+    // Invalidate size after a short delay to ensure container is fully visible
+    setTimeout(() => {
+      if (mapViewMap) {
+        mapViewMap.invalidateSize();
+      }
+    }, 100);
+    setTimeout(() => {
+      if (mapViewMap) {
+        mapViewMap.invalidateSize();
+      }
+    }, 300);
     return mapViewMap;
   }
 

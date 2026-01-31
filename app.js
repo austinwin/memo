@@ -39,6 +39,10 @@ const mapMarkerSelect = document.getElementById('mapMarkerSelect');
 const mapRecenterBtn = document.getElementById('mapRecenterBtn');
 const mapCountLabel = document.getElementById('mapCountLabel');
 const appHeader = document.querySelector('.app-header');
+const composeFab = document.getElementById('composeFab');
+const composeSection = document.getElementById('composeSection');
+const formCloseBtn = document.getElementById('formCloseBtn');
+const bottomNav = document.getElementById('bottomNav');
 
 function showToast(message) {
   if (!toastEl) return;
@@ -48,6 +52,27 @@ function showToast(message) {
   showToast._timeout = setTimeout(() => {
     toastEl.hidden = true;
   }, 2000);
+}
+
+function isMobileView() {
+  return window.innerWidth < 768;
+}
+
+function showComposeForm() {
+  if (composeSection) {
+    composeSection.classList.add('visible');
+    setDatetimeToNow();
+    setTimeout(() => {
+      if (titleInput) titleInput.focus();
+    }, 100);
+  }
+}
+
+function hideComposeForm() {
+  if (composeSection) {
+    composeSection.classList.remove('visible');
+    resetForm();
+  }
 }
 
 function updateHeaderHeight() {
@@ -582,6 +607,11 @@ function startEditMemo(id) {
     datetimeInput.value = '';
   }
 
+  // Show compose form on mobile when editing
+  if (isMobileView()) {
+    showComposeForm();
+  }
+  
   showToast('Editing memo');
 }
 
@@ -680,6 +710,11 @@ function handleSubmit(e) {
   saveMemos();
   renderMemos();
   resetForm();
+  
+  // Close compose form on mobile after saving
+  if (isMobileView()) {
+    hideComposeForm();
+  }
 }
 
 function exportMemosToFile() {
@@ -931,6 +966,57 @@ function init() {
       }
     });
   }
+
+  // Mobile compose FAB
+  if (composeFab) {
+    composeFab.addEventListener('click', () => {
+      showComposeForm();
+    });
+  }
+
+  // Mobile form close button
+  if (formCloseBtn) {
+    formCloseBtn.addEventListener('click', () => {
+      hideComposeForm();
+    });
+  }
+
+  // Bottom navigation
+  if (bottomNav) {
+    bottomNav.querySelectorAll('.nav-item').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const nav = btn.getAttribute('data-nav');
+        
+        // Update active state
+        bottomNav.querySelectorAll('.nav-item').forEach((b) => {
+          b.classList.toggle('active', b === btn);
+        });
+        
+        if (nav === 'map') {
+          setActiveTab('map');
+        } else if (nav === 'entries') {
+          setActiveTab(lastListTab || 'all');
+        }
+      });
+    });
+  }
+
+  // Update bottom nav when map tab is activated via other means
+  function updateBottomNavState() {
+    if (!bottomNav) return;
+    const isMap = activeTab === 'map';
+    bottomNav.querySelectorAll('.nav-item').forEach((btn) => {
+      const nav = btn.getAttribute('data-nav');
+      btn.classList.toggle('active', (isMap && nav === 'map') || (!isMap && nav === 'entries'));
+    });
+  }
+
+  // Override setActiveTab to also update bottom nav
+  const originalSetActiveTab = setActiveTab;
+  setActiveTab = function(tab) {
+    originalSetActiveTab(tab);
+    updateBottomNavState();
+  };
 
   window.addEventListener('resize', updateHeaderHeight);
 }
