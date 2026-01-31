@@ -10,6 +10,9 @@ let editingLocation = null;
 let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 
+let mapClusterEnabled = true;
+let mapTimelineEnabled = false;
+
 const memoForm = document.getElementById('memoForm');
 const titleInput = document.getElementById('title');
 const datetimeInput = document.getElementById('datetime');
@@ -46,6 +49,11 @@ const pageIndicator = document.getElementById('pageIndicator');
 const paginationControls = document.getElementById('paginationControls');
 const mapRecenterBtn = document.getElementById('mapRecenterBtn');
 const mapCountLabel = document.getElementById('mapCountLabel');
+const mapTimelineToggleBtn = document.getElementById('mapTimelineToggleBtn');
+const mapClusterToggleBtn = document.getElementById('mapClusterToggleBtn');
+const mapTimelineBar = document.getElementById('mapTimelineBar');
+const mapTimelineSlider = document.getElementById('mapTimelineSlider');
+const mapTimelineLabel = document.getElementById('mapTimelineLabel');
 const locationSymbolInput = document.getElementById('locationSymbolInput');
 const appHeader = document.querySelector('.app-header');
 const composeFab = document.getElementById('composeFab');
@@ -195,6 +203,63 @@ function getMapCounts(list) {
     places.add(`${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`);
   }
   return { entries, places: places.size };
+}
+
+function getMemoDate(memo) {
+  const ts = memo.datetime || memo.createdAt;
+  if (!ts) return null;
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
+}
+
+function applyMapTimeline(list) {
+  if (!mapTimelineEnabled || !mapTimelineSlider) return list;
+
+  const dated = list
+    .map((memo) => ({ memo, date: getMemoDate(memo) }))
+    .filter((item) => item.date != null);
+
+  if (dated.length < 2) return list;
+
+  dated.sort((a, b) => a.date - b.date);
+  const value = Number(mapTimelineSlider.value) || 100;
+  const idx = Math.round(((dated.length - 1) * value) / 100);
+  const cutoff = dated[idx].date.getTime();
+
+  return list.filter((memo) => {
+    const d = getMemoDate(memo);
+    if (!d) return true;
+    return d.getTime() <= cutoff;
+  });
+}
+
+function updateMapTimelineUI(allMemos) {
+  if (!mapTimelineBar || !mapTimelineSlider || !mapTimelineLabel) return;
+
+  const dated = allMemos
+    .map((memo) => getMemoDate(memo))
+    .filter((d) => d != null)
+    .sort((a, b) => a - b);
+
+  if (!dated.length) {
+    mapTimelineSlider.disabled = true;
+    mapTimelineLabel.textContent = 'No dated entries';
+    return;
+  }
+
+  mapTimelineSlider.disabled = dated.length < 2;
+
+  const value = Number(mapTimelineSlider.value) || 100;
+  if (dated.length === 1 || value >= 100) {
+    const last = dated[dated.length - 1];
+    mapTimelineLabel.textContent = `All time · up to ${formatDateTime(last.toISOString())}`;
+    return;
+  }
+
+  const idx = Math.round(((dated.length - 1) * value) / 100);
+  const cutoff = dated[idx];
+  mapTimelineLabel.textContent = `Up to ${formatDateTime(cutoff.toISOString())}`;
 }
 
 function syncSearchInputs(value) {
@@ -432,12 +497,14 @@ function renderMemos() {
   updateStats();
   
   if (activeTab === 'map') {
+    const mapList = mapTimelineEnabled ? applyMapTimeline(filtered) : filtered;
+
     if (paginationControls) paginationControls.hidden = true;
     if (window.memoLocation && typeof window.memoLocation.renderMapView === 'function') {
-      window.memoLocation.renderMapView(filtered, { markerStyle: mapMarkerStyle });
+      window.memoLocation.renderMapView(mapList, { markerStyle: mapMarkerStyle, cluster: mapClusterEnabled });
     }
     if (mapCountLabel) {
-      const counts = getMapCounts(filtered);
+      const counts = getMapCounts(mapList);
       if (!counts.entries) {
         mapCountLabel.textContent = 'No locations';
       } else {
@@ -446,6 +513,7 @@ function renderMemos() {
         mapCountLabel.textContent = `${placeLabel} · ${entryLabel}`;
       }
     }
+    updateMapTimelineUI(filtered);
     return;
   }
 
@@ -1017,6 +1085,43 @@ function init() {
     mapRecenterBtn.addEventListener('click', () => {
       if (window.memoLocation && typeof window.memoLocation.fitToMarkers === 'function') {
         window.memoLocation.fitToMarkers();
+      }
+    });
+  }
+
+  if (mapClusterToggleBtn) {
+    mapClusterToggleBtn.addEventListener('click', () => {
+      mapClusterEnabled = !mapClusterEnabled;
+      mapClusterToggleBtn.setAttribute('aria-pressed', mapClusterEnabled ? 'true' : 'false');
+      mapClusterToggleBtn.classList.toggle('active', mapClusterEnabled);
+      if (activeTab === 'map') {
+        renderMemos();
+      }
+    });
+  }
+
+  if (mapTimelineToggleBtn && mapTimelineBar) {
+    mapTimelineToggleBtn.addEventListener('click', () => {
+      mapTimelineEnabled = !mapTimelineEnabled;
+      mapTimelineToggleBtn.setAttribute('aria-pressed', mapTimelineEnabled ? 'true' : 'false');
+      mapTimelineToggleBtn.classList.toggle('active', mapTimelineEnabled);
+      mapTimelineBar.hidden = !mapTimelineEnabled;
+      if (activeTab === 'map') {
+        renderMemos();
+      }
+    });
+  }
+
+  if (mapTimelineSlider) {
+    mapTimelineSlider.addEventListener('input', () => {
+      mapTimelineEnabled = true;
+      if (mapTimelineToggleBtn && mapTimelineBar) {
+        mapTimelineToggleBtn.setAttribute('aria-pressed', 'true');
+        mapTimelineToggleBtn.classList.add('active');
+        mapTimelineBar.hidden = false;
+      }
+      if (activeTab === 'map') {
+        renderMemos();
       }
     });
   }

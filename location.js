@@ -271,6 +271,8 @@
     if (options.markerStyle) {
       markerStyle = options.markerStyle;
     }
+    const useClusters = options.cluster !== false;
+
     lastRenderedMemos = Array.isArray(memos) ? memos : [];
     const map = ensureMapView();
     if (!map) return;
@@ -282,33 +284,114 @@
       }
     });
 
-    const clusters = new Map();
-
-    for (const memo of lastRenderedMemos) {
-      const loc = memo.location;
-      if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') continue;
-      const key = `${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`;
-      if (!clusters.has(key)) clusters.set(key, []);
-      clusters.get(key).push(memo);
-    }
-
     const bounds = [];
 
-    clusters.forEach((memoList, key) => {
-      const [latStr, lngStr] = key.split(',');
-      const lat = parseFloat(latStr);
-      const lng = parseFloat(lngStr);
-      const marker = L.marker([lat, lng], {
-        icon: createMarkerIcon(memoList),
-      }).addTo(map);
-      bounds.push([lat, lng]);
+    if (useClusters) {
+      const clusters = new Map();
 
-      marker.on('click', () => {
-        const container = document.createElement('div');
-        container.className = 'map-popup-content';
+      for (const memo of lastRenderedMemos) {
+        const loc = memo.location;
+        if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') continue;
+        const key = `${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`;
+        if (!clusters.has(key)) clusters.set(key, []);
+        clusters.get(key).push(memo);
+      }
 
-        if (memoList.length === 1) {
-          const memo = memoList[0];
+      clusters.forEach((memoList, key) => {
+        const [latStr, lngStr] = key.split(',');
+        const lat = parseFloat(latStr);
+        const lng = parseFloat(lngStr);
+        const marker = L.marker([lat, lng], {
+          icon: createMarkerIcon(memoList),
+        }).addTo(map);
+        bounds.push([lat, lng]);
+
+        marker.on('click', () => {
+          const container = document.createElement('div');
+          container.className = 'map-popup-content';
+
+          if (memoList.length === 1) {
+            const memo = memoList[0];
+            const title = document.createElement('strong');
+            const symbol = memo.location?.symbol ? `${memo.location.symbol} ` : '';
+            title.textContent = `${symbol}${memo.title || '(untitled)'}`;
+            const date = document.createElement('div');
+            date.textContent = window.memoLocation?.formatDateTime?.(memo.datetime || memo.createdAt) || '';
+            const snippet = document.createElement('div');
+            snippet.textContent = (memo.text || '').slice(0, 120);
+            container.appendChild(title);
+            container.appendChild(date);
+            container.appendChild(snippet);
+          } else {
+            const header = document.createElement('div');
+            header.textContent = `${memoList.length} memos here`;
+            header.style.fontWeight = 'bold';
+            header.style.marginBottom = '0.25rem';
+            container.appendChild(header);
+
+            const sortBtn = document.createElement('button');
+            sortBtn.textContent = 'Sort: newest first';
+            sortBtn.style.display = 'block';
+            sortBtn.style.marginBottom = '0.25rem';
+            sortBtn.style.fontSize = '0.7rem';
+            let sortMode = 'newest';
+            container.appendChild(sortBtn);
+
+            const list = document.createElement('ul');
+            list.style.paddingLeft = '1rem';
+            list.style.margin = 0;
+
+            function renderList() {
+              list.innerHTML = '';
+              const sorted = [...memoList].sort((a, b) =>
+                sortMode === 'newest'
+                  ? (b.datetime || b.createdAt) - (a.datetime || a.createdAt)
+                  : (a.datetime || a.createdAt) - (b.datetime || b.createdAt)
+              );
+              for (const memo of sorted) {
+                const li = document.createElement('li');
+                li.style.cursor = 'pointer';
+                li.style.fontSize = '0.75rem';
+                li.textContent = `${window.memoLocation?.formatDateTime?.(memo.datetime || memo.createdAt) || ''} — ${
+                  (memo.title || '').slice(0, 40) || '(untitled)'
+                }`;
+                li.addEventListener('click', () => {
+                  if (window.memoLocation && typeof window.memoLocation.focusMemo === 'function') {
+                    window.memoLocation.focusMemo(memo.id);
+                  }
+                });
+                list.appendChild(li);
+              }
+            }
+
+            sortBtn.addEventListener('click', () => {
+              sortMode = sortMode === 'newest' ? 'oldest' : 'newest';
+              sortBtn.textContent = sortMode === 'newest' ? 'Sort: newest first' : 'Sort: oldest first';
+              renderList();
+            });
+
+            renderList();
+            container.appendChild(list);
+          }
+
+          marker.bindPopup(container).openPopup();
+        });
+      });
+    } else {
+      for (const memo of lastRenderedMemos) {
+        const loc = memo.location;
+        if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') continue;
+        const lat = loc.lat;
+        const lng = loc.lng;
+        const marker = L.marker([lat, lng], {
+          icon: createMarkerIcon([memo]),
+        }).addTo(map);
+        bounds.push([lat, lng]);
+
+        marker.on('click', () => {
+          const container = document.createElement('div');
+          container.className = 'map-popup-content';
+
           const title = document.createElement('strong');
           const symbol = memo.location?.symbol ? `${memo.location.symbol} ` : '';
           title.textContent = `${symbol}${memo.title || '(untitled)'}`;
@@ -319,61 +402,11 @@
           container.appendChild(title);
           container.appendChild(date);
           container.appendChild(snippet);
-        } else {
-          const header = document.createElement('div');
-          header.textContent = `${memoList.length} memos here`;
-          header.style.fontWeight = 'bold';
-          header.style.marginBottom = '0.25rem';
-          container.appendChild(header);
 
-          const sortBtn = document.createElement('button');
-          sortBtn.textContent = 'Sort: newest first';
-          sortBtn.style.display = 'block';
-          sortBtn.style.marginBottom = '0.25rem';
-          sortBtn.style.fontSize = '0.7rem';
-          let sortMode = 'newest';
-          container.appendChild(sortBtn);
-
-          const list = document.createElement('ul');
-          list.style.paddingLeft = '1rem';
-          list.style.margin = 0;
-
-          function renderList() {
-            list.innerHTML = '';
-            const sorted = [...memoList].sort((a, b) =>
-              sortMode === 'newest'
-                ? (b.datetime || b.createdAt) - (a.datetime || a.createdAt)
-                : (a.datetime || a.createdAt) - (b.datetime || b.createdAt)
-            );
-            for (const memo of sorted) {
-              const li = document.createElement('li');
-              li.style.cursor = 'pointer';
-              li.style.fontSize = '0.75rem';
-              li.textContent = `${window.memoLocation?.formatDateTime?.(memo.datetime || memo.createdAt) || ''} — ${
-                (memo.title || '').slice(0, 40) || '(untitled)'
-              }`;
-              li.addEventListener('click', () => {
-                if (window.memoLocation && typeof window.memoLocation.focusMemo === 'function') {
-                  window.memoLocation.focusMemo(memo.id);
-                }
-              });
-              list.appendChild(li);
-            }
-          }
-
-          sortBtn.addEventListener('click', () => {
-            sortMode = sortMode === 'newest' ? 'oldest' : 'newest';
-            sortBtn.textContent = sortMode === 'newest' ? 'Sort: newest first' : 'Sort: oldest first';
-            renderList();
-          });
-
-          renderList();
-          container.appendChild(list);
-        }
-
-        marker.bindPopup(container).openPopup();
-      });
-    });
+          marker.bindPopup(container).openPopup();
+        });
+      }
+    }
 
     if (bounds.length) {
       lastBounds = L.latLngBounds(bounds);

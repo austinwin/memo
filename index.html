@@ -183,6 +183,16 @@
             <option value="dot">🔴</option>
             <option value="emoji">😊</option>
           </select>
+          <button id="mapTimelineToggleBtn" class="btn icon-btn blur-btn map-small-toggle" type="button" aria-pressed="false" aria-label="Toggle mood timeline">
+            ⏱
+          </button>
+          <button id="mapClusterToggleBtn" class="btn icon-btn blur-btn map-small-toggle" type="button" aria-pressed="true" aria-label="Toggle clustering">
+            ◯◯
+          </button>
+        </div>
+        <div id="mapTimelineBar" class="map-timeline-bar" hidden>
+          <span id="mapTimelineLabel" class="map-timeline-label">All time</span>
+          <input id="mapTimelineSlider" class="map-timeline-slider" type="range" min="0" max="100" value="100" aria-label="Filter by time" />
         </div>
       </div>
     </div>
