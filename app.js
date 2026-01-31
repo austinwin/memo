@@ -10,7 +10,7 @@ let editingLocation = null;
 let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 
-let mapClusterEnabled = true;
+let mapHeatEnabled = false;
 let mapTimelineEnabled = false;
 
 const memoForm = document.getElementById('memoForm');
@@ -50,7 +50,7 @@ const paginationControls = document.getElementById('paginationControls');
 const mapRecenterBtn = document.getElementById('mapRecenterBtn');
 const mapCountLabel = document.getElementById('mapCountLabel');
 const mapTimelineToggleBtn = document.getElementById('mapTimelineToggleBtn');
-const mapClusterToggleBtn = document.getElementById('mapClusterToggleBtn');
+const mapHeatToggleBtn = document.getElementById('mapHeatToggleBtn');
 const mapTimelineBar = document.getElementById('mapTimelineBar');
 const mapTimelineSlider = document.getElementById('mapTimelineSlider');
 const mapTimelineLabel = document.getElementById('mapTimelineLabel');
@@ -501,7 +501,7 @@ function renderMemos() {
 
     if (paginationControls) paginationControls.hidden = true;
     if (window.memoLocation && typeof window.memoLocation.renderMapView === 'function') {
-      window.memoLocation.renderMapView(mapList, { markerStyle: mapMarkerStyle, cluster: mapClusterEnabled });
+      window.memoLocation.renderMapView(mapList, { markerStyle: mapMarkerStyle, heat: mapHeatEnabled });
     }
     if (mapCountLabel) {
       const counts = getMapCounts(mapList);
@@ -1089,11 +1089,11 @@ function init() {
     });
   }
 
-  if (mapClusterToggleBtn) {
-    mapClusterToggleBtn.addEventListener('click', () => {
-      mapClusterEnabled = !mapClusterEnabled;
-      mapClusterToggleBtn.setAttribute('aria-pressed', mapClusterEnabled ? 'true' : 'false');
-      mapClusterToggleBtn.classList.toggle('active', mapClusterEnabled);
+  if (mapHeatToggleBtn) {
+    mapHeatToggleBtn.addEventListener('click', () => {
+      mapHeatEnabled = !mapHeatEnabled;
+      mapHeatToggleBtn.setAttribute('aria-pressed', mapHeatEnabled ? 'true' : 'false');
+      mapHeatToggleBtn.classList.toggle('active', mapHeatEnabled);
       if (activeTab === 'map') {
         renderMemos();
       }

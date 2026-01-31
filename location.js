@@ -271,7 +271,7 @@
     if (options.markerStyle) {
       markerStyle = options.markerStyle;
     }
-    const useClusters = options.cluster !== false;
+    const useHeat = !!options.heat;
 
     lastRenderedMemos = Array.isArray(memos) ? memos : [];
     const map = ensureMapView();
@@ -286,7 +286,35 @@
 
     const bounds = [];
 
-    if (useClusters) {
+    if (useHeat) {
+      // Simple heat density via semi-transparent circles; more visits = stronger color
+      const counts = new Map();
+      for (const memo of lastRenderedMemos) {
+        const loc = memo.location;
+        if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') continue;
+        const key = `${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`;
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+
+      const max = Math.max(1, ...counts.values());
+      counts.forEach((count, key) => {
+        const [latStr, lngStr] = key.split(',');
+        const lat = parseFloat(latStr);
+        const lng = parseFloat(lngStr);
+        const intensity = count / max; // 0–1
+        const radius = 20 + intensity * 40;
+        const color = intensity > 0.66 ? '#ff3b30' : intensity > 0.33 ? '#ff9f0a' : '#ffd60a';
+
+        const circle = L.circle([lat, lng], {
+          radius: radius,
+          color: color,
+          fillColor: color,
+          fillOpacity: 0.35,
+          weight: 0,
+        }).addTo(map);
+        bounds.push([lat, lng]);
+      });
+    } else {
       const clusters = new Map();
 
       for (const memo of lastRenderedMemos) {
@@ -377,35 +405,6 @@
           marker.bindPopup(container).openPopup();
         });
       });
-    } else {
-      for (const memo of lastRenderedMemos) {
-        const loc = memo.location;
-        if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') continue;
-        const lat = loc.lat;
-        const lng = loc.lng;
-        const marker = L.marker([lat, lng], {
-          icon: createMarkerIcon([memo]),
-        }).addTo(map);
-        bounds.push([lat, lng]);
-
-        marker.on('click', () => {
-          const container = document.createElement('div');
-          container.className = 'map-popup-content';
-
-          const title = document.createElement('strong');
-          const symbol = memo.location?.symbol ? `${memo.location.symbol} ` : '';
-          title.textContent = `${symbol}${memo.title || '(untitled)'}`;
-          const date = document.createElement('div');
-          date.textContent = window.memoLocation?.formatDateTime?.(memo.datetime || memo.createdAt) || '';
-          const snippet = document.createElement('div');
-          snippet.textContent = (memo.text || '').slice(0, 120);
-          container.appendChild(title);
-          container.appendChild(date);
-          container.appendChild(snippet);
-
-          marker.bindPopup(container).openPopup();
-        });
-      }
     }
 
     if (bounds.length) {
