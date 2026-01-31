@@ -602,7 +602,7 @@ function renderMemos() {
     paginationControls.hidden = totalPages <= 1;
     
     if (!paginationControls.hidden) {
-      if (pageIndicator) pageIndicator.textContent = `${currentPage} / ${totalPages}`;
+      if (pageIndicator) pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
       if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
       if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
     }
