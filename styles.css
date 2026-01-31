@@ -209,186 +209,110 @@ body {
   box-shadow: none;
   max-width: 680px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .memo-list-header {
   padding: 12px 16px 4px;
 }
 
-.memo-list-title {
-  display: none;
-}
-
-.memo-list-subtitle {
-  display: none;
-}
-
-/* Filter Pills Row */
+/* Controls */
 .memo-list-controls {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 0 16px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .memo-controls-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-bottom: 2px;
+  width: 100%;
 }
 
-.memo-controls-row::-webkit-scrollbar {
-  display: none;
-}
-
-/* Filter Tabs (Pill style) */
-.memo-tabs {
-  display: flex;
-  align-items: center;
+.secondary-controls {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 0.8fr;
   gap: 8px;
-  padding: 4px 0;
-  background: transparent;
-  border: none;
-  flex-shrink: 0;
 }
 
-.memo-tab {
-  padding: 6px 14px;
-  border-radius: 18px;
+/* Compact Filters (Selects) */
+.filter-select {
+  padding: 8px 12px;
+  border-radius: 10px;
   font-size: 13px;
-  font-weight: 600;
-  background: rgba(118, 118, 128, 0.12);
+  font-weight: 500;
+  background: var(--bg-secondary);
   border: none;
   color: var(--text);
   cursor: pointer;
+  appearance: none;
+  /* Custom arrow */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3csvg%20xmlns%3d'http%3a%2f%2fwww.w3.org%2f2000%2fsvg'%20viewBox%3d'0%200%2024%2024'%20fill%3d'none'%20stroke%3d'%238e8e93'%20stroke-width%3d'2'%20stroke-linecap%3d'round'%20stroke-linejoin%3d'round'%3e%3cpolyline%20points%3d'6%209%2012%2015%2018%209'%2f%3e%3c%2fsvg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 14px;
+  padding-right: 28px;
+  width: 100%;
   white-space: nowrap;
-  transition: all 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.memo-tab.active {
-  background: var(--text);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.memo-tab:active {
-  opacity: 0.7;
-}
-
-/* Sort dropdown */
-.sort-select {
-  padding: 6px 10px;
-  border-radius: 18px;
-  font-size: 13px;
-  font-weight: 500;
-  background: rgba(118, 118, 128, 0.12);
+/* Minimal Stats Bar (Chips) */
+.memo-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 16px;
+  margin: 0 0 12px;
+  background: transparent;
   border: none;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(118, 118, 128, 0.08); /* Very subtle bg */
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 13px;
   color: var(--text-secondary);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-/* Search Bar */
-.memo-search-group {
+  font-weight: 500;
   flex: 1;
-  min-width: 0;
+  justify-content: center;
 }
 
+.stat-icon {
+  font-size: 13px;
+}
+
+.stat-label-short {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+#streakCount, #weekCount, #todayWords, #weekWords {
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Search Group */
 .search-input {
   width: 100%;
-  padding: 8px 14px;
+  padding: 10px 14px;
   border-radius: 10px;
   border: none;
   background: rgba(118, 118, 128, 0.12);
   font-size: 15px;
   color: var(--text);
   outline: none;
-  height: 36px;
+  height: 40px;
 }
 
-.search-input::placeholder {
-  color: var(--text-secondary);
-}
-
-.search-input:focus {
-  background: rgba(118, 118, 128, 0.18);
-}
-
-/* Mood Filter - Compact Pills */
-.mood-filter {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.mood-filter-btn {
-  padding: 6px 12px;
-  border-radius: 16px;
-  font-size: 13px;
-  background: rgba(118, 118, 128, 0.12);
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.mood-filter-btn.active {
-  background: var(--text);
-  color: #fff;
-}
-
-/* Stats Grid - Compact 2x2 */
-.memo-stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 0 16px;
-  margin: 8px 0 16px;
-  background: transparent;
-  border-radius: 0;
-  overflow: visible;
-  border: none;
-  box-shadow: none;
-}
-
-.memo-stats::-webkit-scrollbar {
-  display: none;
-}
-
-.memo-stats-item {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2px;
-  margin: 0;
-  padding: 10px 12px;
-  background: #fff;
-  border-radius: 12px;
-  min-width: 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.memo-stats-label {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.memo-stats-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
 
 /* ===== MEMO CARDS - iOS STYLE ===== */
 .memo-list {

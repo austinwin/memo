@@ -88,59 +88,63 @@
         </div>
       </div>
       <div class="memo-list-controls">
-        <div class="memo-controls-row">
-          <div class="memo-search-group">
-            <input
-              id="searchInput"
-              class="search-input"
-              type="search"
-              placeholder="Search entries..."
-              aria-label="Search entries"
-            />
-          </div>
+        <div class="memo-controls-row primary-controls">
+          <input
+            id="searchInput"
+            class="search-input"
+            type="search"
+            placeholder="Search entries..."
+            aria-label="Search entries"
+          />
         </div>
-        <div class="memo-controls-row">
-          <nav class="memo-tabs" aria-label="Filter memos">
-            <button class="memo-tab active" data-tab="all" type="button">All</button>
-            <button class="memo-tab" data-tab="today" type="button">Today</button>
-            <button class="memo-tab" data-tab="pinned" type="button">Pinned</button>
-            <button class="memo-tab" data-tab="tasks" type="button">Tasks</button>
-            <button class="memo-tab" data-tab="map" type="button">Map</button>
-          </nav>
-          <select id="sortSelect" class="sort-select">
+        <div class="memo-controls-row secondary-controls">
+          <select id="viewSelect" class="filter-select" aria-label="Filter entries">
+            <option value="all">All Entries</option>
+            <option value="today">Today</option>
+            <option value="pinned">Pinned</option>
+            <option value="tasks">Tasks</option>
+            <option value="map">Map View</option>
+          </select>
+          <select id="moodSelect" class="filter-select" aria-label="Filter by mood">
+            <option value="all">Mood: All</option>
+            <option value="great">Mood: 😊</option>
+            <option value="ok">Mood: 😐</option>
+            <option value="bad">Mood: 😞</option>
+          </select>
+          <select id="sortSelect" class="filter-select" aria-label="Sort entries">
             <option value="newest">Newest</option>
             <option value="oldest">Oldest</option>
             <option value="title">A-Z</option>
           </select>
         </div>
-        <div class="memo-controls-row">
-          <div class="mood-filter" aria-label="Filter by mood" role="radiogroup">
-            <button type="button" class="mood-filter-btn active" data-filter="mood" data-mood="all" role="radio" aria-pressed="true">All</button>
-            <button type="button" class="mood-filter-btn" data-filter="mood" data-mood="great" role="radio" aria-pressed="false">😊</button>
-            <button type="button" class="mood-filter-btn" data-filter="mood" data-mood="ok" role="radio" aria-pressed="false">😐</button>
-            <button type="button" class="mood-filter-btn" data-filter="mood" data-mood="bad" role="radio" aria-pressed="false">😞</button>
-          </div>
-        </div>
       </div>
       <section class="memo-stats" aria-label="Writing statistics">
-        <p class="memo-stats-item">
-          <span class="memo-stats-label">Streak</span>
-          <span id="streakCount" class="memo-stats-value">0</span>
-        </p>
-        <p class="memo-stats-item">
-          <span class="memo-stats-label">This Week</span>
-          <span id="weekCount" class="memo-stats-value">0</span>
-        </p>
-        <p class="memo-stats-item">
-          <span class="memo-stats-label">Today</span>
-          <span id="todayWords" class="memo-stats-value">0</span>
-        </p>
-        <p class="memo-stats-item">
-          <span class="memo-stats-label">Week Words</span>
-          <span id="weekWords" class="memo-stats-value">0</span>
-        </p>
+        <div class="stat-chip">
+          <span class="stat-icon">🔥</span>
+          <span id="streakCount">0</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-icon">📅</span>
+          <span id="weekCount">0</span>
+          <span class="stat-label-short">wk</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-icon">📝</span>
+          <span id="todayWords">0</span>
+          <span class="stat-label-short">words</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-icon">📊</span>
+          <span id="weekWords">0</span>
+          <span class="stat-label-short">total</span>
+        </div>
       </section>
       <div id="memoList" class="memo-list"></div>
+      <div id="paginationControls" class="pagination-controls" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 1rem; padding-bottom: 2rem;">
+        <button id="prevPageBtn" class="btn secondary" type="button" disabled>Previous</button>
+        <span id="pageIndicator" style="font-variant-numeric: tabular-nums; font-weight: 500;">Page 1</span>
+        <button id="nextPageBtn" class="btn secondary" type="button">Next</button>
+      </div>
     </section>
 
     <section class="memo-detail-section" id="memoDetailSection" hidden>
@@ -163,12 +167,12 @@
         </div>
         <div class="map-header-row secondary-row">
           <span id="mapCountLabel" class="map-count-badge">0 places</span>
-          <div class="map-filter" aria-label="Filter map by mood" role="radiogroup">
-            <button type="button" class="mood-filter-btn map-filter-btn active" data-filter="mood" data-mood="all" role="radio" aria-pressed="true">All</button>
-            <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="great" role="radio" aria-pressed="false">😊</button>
-            <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="ok" role="radio" aria-pressed="false">😐</button>
-            <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="bad" role="radio" aria-pressed="false">😞</button>
-          </div>
+          <select id="mapMoodSelect" class="map-marker-select glass-select" aria-label="Filter map by mood">
+            <option value="all">All moods</option>
+            <option value="great">😊 Great</option>
+            <option value="ok">😐 Okay</option>
+            <option value="bad">😞 Bad</option>
+          </select>
           <select id="mapMarkerSelect" class="map-marker-select glass-select" aria-label="Map symbol style">
             <option value="pin">📍</option>
             <option value="dot">🔴</option>

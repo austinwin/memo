@@ -7,6 +7,8 @@ let activeMoodFilter = 'all'; // 'all' | 'great' | 'ok' | 'bad'
 let lastListTab = 'all';
 let mapMarkerStyle = 'pin';
 let editingLocation = null;
+let currentPage = 1;
+const ITEMS_PER_PAGE = 10;
 
 const memoForm = document.getElementById('memoForm');
 const titleInput = document.getElementById('title');
@@ -36,6 +38,12 @@ const mapShell = document.getElementById('mapShell');
 const mapCloseBtn = document.getElementById('mapCloseBtn');
 const mapSearchInput = document.getElementById('mapSearchInput');
 const mapMarkerSelect = document.getElementById('mapMarkerSelect');
+const mapMoodSelect = document.getElementById('mapMoodSelect');
+const moodSelect = document.getElementById('moodSelect');
+const prevPageBtn = document.getElementById('prevPageBtn');
+const nextPageBtn = document.getElementById('nextPageBtn');
+const pageIndicator = document.getElementById('pageIndicator');
+const paginationControls = document.getElementById('paginationControls');
 const mapRecenterBtn = document.getElementById('mapRecenterBtn');
 const mapCountLabel = document.getElementById('mapCountLabel');
 const locationSymbolInput = document.getElementById('locationSymbolInput');
@@ -200,6 +208,14 @@ function syncSearchInputs(value) {
 
 function setMoodFilter(mood) {
   activeMoodFilter = mood || 'all';
+  
+  if (moodSelect) {
+    moodSelect.value = activeMoodFilter;
+  }
+  if (mapMoodSelect) {
+    mapMoodSelect.value = activeMoodFilter;
+  }
+
   document.querySelectorAll('[data-filter=\"mood\"]').forEach((btn) => {
     const isActive = (btn.dataset.mood || 'all') === activeMoodFilter;
     btn.classList.toggle('active', isActive);
@@ -409,14 +425,7 @@ function renderMemos() {
   document.body.classList.toggle('map-mode', activeTab === 'map');
   if (mapShell) {
     mapShell.hidden = activeTab !== 'map';
-  }
-  updateHeaderHeight();
-
-  const filtered = filterMemos(memos);
-  updateStats();
-
-  if (activeTab === 'map') {
-    memoList.hidden = true;
+  }paginationControls) paginationControls.hidden = true;
     if (window.memoLocation && typeof window.memoLocation.renderMapView === 'function') {
       window.memoLocation.renderMapView(filtered, { markerStyle: mapMarkerStyle });
     }
@@ -438,9 +447,36 @@ function renderMemos() {
   memoList.innerHTML = '';
 
   if (!filtered.length) {
+    if (paginationControls) paginationControls.hidden = true;
     const empty = document.createElement('p');
     empty.textContent = searchInput?.value
       ? 'No memos match your search.'
+      : 'No memos yet. Start by writing your first one.';
+    empty.style.fontSize = '0.85rem';
+    empty.style.color = 'var(--muted)';
+    memoList.appendChild(empty);
+    return;
+  }
+
+  // Pagination Logic
+  const totalItems = filtered.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+  
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  const pageItems = filtered.slice(start, end);
+
+  if (paginationControls) {
+    paginationControls.hidden = false;
+    if (pageIndicator) pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
+    if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
+    if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
+  }
+
+  const dayGroups = groupMemosByDay(pageItems
       : 'No memos yet. Start by writing your first one.';
     empty.style.fontSize = '0.85rem';
     empty.style.color = 'var(--muted)';
@@ -839,6 +875,7 @@ function init() {
     document.querySelectorAll('.memo-tab').forEach((b) => {
       b.classList.toggle('active', b.getAttribute('data-tab') === tab);
     });
+    currentPage = 1;
     renderMemos();
   }
 
@@ -856,12 +893,16 @@ function init() {
   });
 
   if (sortSelect) {
-    sortSelect.addEventListener('change', renderMemos);
+    sortSelect.addEventListener('change', () => {
+      currentPage = 1;
+      renderMemos();
+    });
   }
 
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       syncSearchInputs(searchInput.value);
+      currentPage = 1;
       renderMemos();
     });
   }
@@ -906,6 +947,39 @@ function init() {
 
   function goToMapView() {
     setActiveTab('map');
+  }
+
+  if (mapMoodSelect) {
+    mapMoodSelect.addEventListener('change', () => {
+      setMoodFilter(mapMoodSelect.value);
+      renderMemos();
+    });
+  }
+
+  if (moodSelect) {
+    moodSelect.addEventListener('change', () => {
+      setMoodFilter(moodSelect.value);
+      currentPage = 1;
+      renderMemos();
+    });
+  }
+
+  if (prevPageBtn) {
+    prevPageBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderMemos();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  }
+
+  if (nextPageBtn) {
+    nextPageBtn.addEventListener('click', () => { // Ensure logic handles max pages properly inside renderMemos
+       currentPage++;
+       renderMemos();
+       window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   }
 
   if (mapHeaderBtn) {
