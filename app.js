@@ -38,6 +38,7 @@ const mapSearchInput = document.getElementById('mapSearchInput');
 const mapMarkerSelect = document.getElementById('mapMarkerSelect');
 const mapRecenterBtn = document.getElementById('mapRecenterBtn');
 const mapCountLabel = document.getElementById('mapCountLabel');
+const locationSymbolInput = document.getElementById('locationSymbolInput');
 const appHeader = document.querySelector('.app-header');
 const composeFab = document.getElementById('composeFab');
 const composeSection = document.getElementById('composeSection');
@@ -524,7 +525,7 @@ function renderMemos() {
         locIcon.type = 'button';
         locIcon.className = 'icon-btn memo-location-icon';
         locIcon.title = 'View on map';
-        locIcon.textContent = '📍';
+        locIcon.textContent = memo.location.symbol || '📍';
         locIcon.addEventListener('click', () => {
           if (activeTab !== 'map') {
             lastListTab = activeTab;
@@ -568,6 +569,9 @@ function resetForm() {
     locationSummaryEl.hidden = true;
     locationSummaryEl.textContent = '';
   }
+  if (locationSymbolInput) {
+    locationSymbolInput.value = '📍';
+  }
   if (window.memoLocation && typeof window.memoLocation.setCurrentEditingLocation === 'function') {
     window.memoLocation.setCurrentEditingLocation(null);
   }
@@ -588,6 +592,9 @@ function startEditMemo(id) {
     isTodoInput.checked = !!memo.isTodo;
   }
   editingLocation = memo.location || null;
+  if (locationSymbolInput) {
+    locationSymbolInput.value = memo.location?.symbol || '📍';
+  }
   if (window.memoLocation && typeof window.memoLocation.setCurrentEditingLocation === 'function') {
     window.memoLocation.setCurrentEditingLocation(editingLocation);
   }
@@ -676,6 +683,11 @@ function handleSubmit(e) {
   }
 
   const mood = currentMood.value || null;
+  const symbol = locationSymbolInput ? locationSymbolInput.value : '📍';
+
+  if (editingLocation) {
+    editingLocation.symbol = symbol;
+  }
 
   if (editingId != null) {
     const idx = memos.findIndex(m => m.id === editingId);
@@ -947,6 +959,9 @@ function init() {
     window.memoLocation.getCurrentEditingLocation = () => editingLocation;
     window.memoLocation.onLocationSelected = (loc) => {
       editingLocation = loc || null;
+      if (editingLocation && locationSymbolInput) {
+        editingLocation.symbol = locationSymbolInput.value;
+      }
     };
     if (typeof window.memoLocation.initLocationPicker === 'function') {
       window.memoLocation.initLocationPicker();

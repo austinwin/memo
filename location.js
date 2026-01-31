@@ -251,6 +251,8 @@
       label = String(count);
     } else if (style === 'emoji') {
       label = getMoodEmoji(tone);
+    } else if (memoList.length === 1 && memoList[0].location?.symbol) {
+      label = memoList[0].location.symbol;
     }
 
     const size = style === 'dot' ? 22 : 34;
@@ -308,7 +310,8 @@
         if (memoList.length === 1) {
           const memo = memoList[0];
           const title = document.createElement('strong');
-          title.textContent = memo.title || '(untitled)';
+          const symbol = memo.location?.symbol ? `${memo.location.symbol} ` : '';
+          title.textContent = `${symbol}${memo.title || '(untitled)'}`;
           const date = document.createElement('div');
           date.textContent = window.memoLocation?.formatDateTime?.(memo.datetime || memo.createdAt) || '';
           const snippet = document.createElement('div');

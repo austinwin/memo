@@ -1052,6 +1052,30 @@ body.map-mode .memo-list-section {
   gap: 12px;
 }
 
+.location-label-group {
+  display: flex;
+  gap: 8px;
+}
+
+.location-label-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-symbol-select {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text);
+  outline: none;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  width: 80px;
+}
+
 .location-label-input {
   flex: 1;
 }
