@@ -455,6 +455,17 @@ export const MapManager = {
     }
   },
 
+  focusMemo(id) {
+    if (!id) return;
+    const memo = this.lastRenderedMemos.find((item) => item.id === id);
+    if (!memo || !memo.location || typeof memo.location.lat !== 'number' || typeof memo.location.lng !== 'number') {
+      return;
+    }
+    const map = this.ensureMapView();
+    if (!map) return;
+    map.setView([memo.location.lat, memo.location.lng], 15, { animate: true });
+  },
+
   setCurrentEditingLocation(loc) {
     this.currentLocation = loc ? { ...loc } : null;
     if (this.elements.locationLabelInput) {

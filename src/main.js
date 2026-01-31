@@ -66,6 +66,7 @@ const elements = {
   todayWordsEl: document.getElementById('todayWords'),
   weekWordsEl: document.getElementById('weekWords'),
   dailyGoalLabel: document.getElementById('dailyGoalLabel'),
+  dailyGoalChip: document.getElementById('dailyGoalChip'),
   
   // Map Timeline
   mapTimelineToggleBtn: document.getElementById('mapTimelineToggleBtn'),
@@ -90,6 +91,28 @@ const elements = {
   importInput: document.getElementById('importInput'),
   appHeader: document.querySelector('.app-header'),
 };
+
+function setSearchQuery(value) {
+  const next = value ?? '';
+  state.view.searchQuery = next;
+  state.view.currentPage = 1;
+  if (elements.searchInput && elements.searchInput.value !== next) {
+    elements.searchInput.value = next;
+  }
+  if (elements.mapSearchInput && elements.mapSearchInput.value !== next) {
+    elements.mapSearchInput.value = next;
+  }
+}
+
+function syncSearchInputs() {
+  const value = state.view.searchQuery || '';
+  if (elements.searchInput && elements.searchInput.value !== value) {
+    elements.searchInput.value = value;
+  }
+  if (elements.mapSearchInput && elements.mapSearchInput.value !== value) {
+    elements.mapSearchInput.value = value;
+  }
+}
 
 // --- Initialization ---
 
@@ -235,6 +258,34 @@ function render() {
   document.body.classList.toggle('map-mode', state.view.activeTab === 'map');
   if (elements.mapShell) elements.mapShell.hidden = state.view.activeTab !== 'map';
   if (elements.memoList) elements.memoList.hidden = state.view.activeTab === 'map';
+  syncSearchInputs();
+  if (elements.viewSelect && elements.viewSelect.value !== state.view.activeTab) {
+    elements.viewSelect.value = state.view.activeTab;
+  }
+  if (elements.moodSelect && elements.moodSelect.value !== state.view.activeMoodFilter) {
+    elements.moodSelect.value = state.view.activeMoodFilter;
+  }
+  if (elements.mapMoodSelect && elements.mapMoodSelect.value !== state.view.activeMoodFilter) {
+    elements.mapMoodSelect.value = state.view.activeMoodFilter;
+  }
+  if (elements.mapTimelineBar) {
+    elements.mapTimelineBar.hidden = !state.map.timelineEnabled;
+  }
+  if (elements.mapTimelineToggleBtn) {
+    elements.mapTimelineToggleBtn.setAttribute('aria-pressed', state.map.timelineEnabled);
+  }
+  if (elements.mapHeatToggleBtn) {
+    elements.mapHeatToggleBtn.setAttribute('aria-pressed', state.map.heatEnabled);
+  }
+  if (elements.mapMarkerSelect && elements.mapMarkerSelect.value !== state.map.markerStyle) {
+    elements.mapMarkerSelect.value = state.map.markerStyle;
+  }
+  if (elements.mapTimelineMode && elements.mapTimelineMode.value !== state.map.timelineMode) {
+    elements.mapTimelineMode.value = state.map.timelineMode;
+  }
+  if (elements.mapTimelineSlider) {
+    elements.mapTimelineSlider.value = String(state.map.timelineValue);
+  }
 
   // 1. Filter & Sort
   const filtered = MemoManager.filterMemos(state.memos, {
@@ -284,8 +335,21 @@ function render() {
       // Should probably move getMapCounts to MapManager or MemoManager
       // For now, doing it here or simple calculation
       if (elements.mapCountLabel) {
-         const count = mapList.filter(m => m.location && m.location.lat).length;
-         elements.mapCountLabel.textContent = `${count} locations`;
+         const places = new Set();
+         let entries = 0;
+         mapList.forEach((memo) => {
+           const loc = memo.location;
+           if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number') return;
+           entries += 1;
+           places.add(`${loc.lat.toFixed(4)},${loc.lng.toFixed(4)}`);
+         });
+         if (!entries) {
+           elements.mapCountLabel.textContent = 'No locations';
+         } else {
+           const placeLabel = `${places.size} place${places.size === 1 ? '' : 's'}`;
+           const entryLabel = `${entries} entr${entries === 1 ? 'y' : 'ies'}`;
+           elements.mapCountLabel.textContent = `${placeLabel} · ${entryLabel}`;
+         }
       }
       return;
   }
@@ -319,7 +383,8 @@ function render() {
           render();
           MapManager.focusMemo(memo.id); // Or MapManager.setView ...
       },
-      isSearchActive: !!state.view.searchQuery
+      isSearchActive: !!state.view.searchQuery,
+      onCompose: showComposeForm
   });
 
   if (showPagination) {
@@ -384,24 +449,40 @@ function bindEvents() {
 
     // Navigation & Filters
     elements.viewSelect?.addEventListener('change', (e) => {
-        state.view.activeTab = e.target.value;
+        const nextTab = e.target.value;
+        if (nextTab === 'map' && state.view.activeTab !== 'map') {
+            state.map.lastListTab = state.view.activeTab;
+        }
+        state.view.activeTab = nextTab;
         state.view.currentPage = 1;
+        updateBottomNav(nextTab === 'map' ? 'map' : 'all');
         render();
     });
 
     elements.bottomNav?.querySelectorAll('.nav-item').forEach(btn => {
         btn.addEventListener('click', () => {
              const nav = btn.dataset.nav;
+             if (!nav) return;
+             if (nav === 'map' && state.view.activeTab !== 'map') {
+                 state.map.lastListTab = state.view.activeTab;
+             }
              state.view.activeTab = nav;
              state.view.currentPage = 1;
              updateBottomNav(nav);
+             if (elements.viewSelect && elements.viewSelect.value !== nav) {
+                 elements.viewSelect.value = nav;
+             }
              render();
         });
     });
 
     elements.searchInput?.addEventListener('input', (e) => {
-        state.view.searchQuery = e.target.value;
-        state.view.currentPage = 1;
+        setSearchQuery(e.target.value);
+        render();
+    });
+
+    elements.mapSearchInput?.addEventListener('input', (e) => {
+        setSearchQuery(e.target.value);
         render();
     });
 
@@ -435,6 +516,10 @@ function bindEvents() {
         render();
     });
 
+    elements.mapRecenterBtn?.addEventListener('click', () => {
+        MapManager.fitToMarkers();
+    });
+
     elements.mapHeatToggleBtn?.addEventListener('click', () => {
         state.map.heatEnabled = !state.map.heatEnabled;
         if(elements.mapHeatToggleBtn) elements.mapHeatToggleBtn.setAttribute('aria-pressed', state.map.heatEnabled);
@@ -457,6 +542,37 @@ function bindEvents() {
     elements.mapTimelineMode?.addEventListener('change', (e) => {
         state.map.timelineMode = e.target.value;
         render();
+    });
+
+    elements.mapCloseBtn?.addEventListener('click', () => {
+        const back = state.map.lastListTab && state.map.lastListTab !== 'map' ? state.map.lastListTab : 'all';
+        state.view.activeTab = back;
+        if (elements.viewSelect) elements.viewSelect.value = back;
+        updateBottomNav(back === 'map' ? 'map' : 'all');
+        render();
+    });
+
+    elements.dailyGoalChip?.addEventListener('click', () => {
+        const current = state.settings.dailyWordGoal ?? '';
+        const input = window.prompt('Set a daily word goal (leave blank to clear):', current);
+        if (input == null) return;
+        const trimmed = String(input).trim();
+        if (!trimmed) {
+            state.settings.dailyWordGoal = null;
+            Storage.saveSettings(state.settings);
+            render();
+            showToast('Daily goal cleared');
+            return;
+        }
+        const nextGoal = Number(trimmed);
+        if (!Number.isFinite(nextGoal) || nextGoal <= 0) {
+            showToast('Enter a positive number for your goal');
+            return;
+        }
+        state.settings.dailyWordGoal = Math.round(nextGoal);
+        Storage.saveSettings(state.settings);
+        render();
+        showToast('Daily goal updated');
     });
     
     // Export/Import

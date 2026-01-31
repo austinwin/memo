@@ -8,7 +8,7 @@ export const Renderer = {
     container.innerHTML = '';
 
     if (!memos.length) {
-      this.renderEmptyState(container, callbacks.isSearchActive);
+      this.renderEmptyState(container, callbacks.isSearchActive, callbacks.onCompose);
       return;
     }
 
@@ -145,14 +145,26 @@ export const Renderer = {
     return node;
   },
 
-  renderEmptyState(container, isSearchActive) {
-    const empty = document.createElement('p');
-    empty.textContent = isSearchActive
-      ? 'No memos match your search.'
-      : 'No memos yet. Start by writing your first one.';
-    empty.style.fontSize = '0.85rem';
-    empty.style.color = 'var(--muted)';
-    container.appendChild(empty);
+  renderEmptyState(container, isSearchActive, onCompose) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'empty-state';
+
+    const message = document.createElement('p');
+    message.textContent = isSearchActive
+      ? 'No entries match your search.'
+      : 'No entries yet. Start with your first reflection.';
+    wrapper.appendChild(message);
+
+    if (!isSearchActive && typeof onCompose === 'function') {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn primary empty-state-btn';
+      button.textContent = 'Write your first entry';
+      button.addEventListener('click', () => onCompose());
+      wrapper.appendChild(button);
+    }
+
+    container.appendChild(wrapper);
   },
 
   updateStatsDOM(stats, elements, goal) {
