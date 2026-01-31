@@ -149,30 +149,34 @@
   </main>
 
   <div id="mapShell" class="map-shell" hidden>
-    <div id="mapToolbar" class="map-toolbar">
-      <div class="map-toolbar-group map-toolbar-left">
-        <button id="mapCloseBtn" class="btn ghost" type="button">Back</button>
-        <span id="mapCountLabel" class="map-count">0 places</span>
-      </div>
-      <div class="map-toolbar-group map-toolbar-center">
-        <input id="mapSearchInput" class="map-search-input" type="search" placeholder="Search locations..." aria-label="Search map entries" />
-      </div>
-      <div class="map-toolbar-group map-toolbar-right">
-        <div class="map-filter" aria-label="Filter map by mood" role="radiogroup">
-          <button type="button" class="mood-filter-btn map-filter-btn active" data-filter="mood" data-mood="all" role="radio" aria-pressed="true">All</button>
-          <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="great" role="radio" aria-pressed="false">😊</button>
-          <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="ok" role="radio" aria-pressed="false">😐</button>
-          <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="bad" role="radio" aria-pressed="false">😞</button>
+    <div id="mapView" class="map-view"></div>
+    <div id="mapOverlay" class="map-overlay">
+      <div class="map-overlay-top">
+        <div class="map-overlay-top-left">
+          <button id="mapCloseBtn" class="btn ghost" type="button">Back</button>
+          <span id="mapCountLabel" class="map-count">0 places</span>
         </div>
-        <select id="mapMarkerSelect" class="map-marker-select" aria-label="Map symbol style">
-          <option value="pin">Pins</option>
-          <option value="dot">Dots</option>
-          <option value="emoji">Emoji</option>
-        </select>
-        <button id="mapRecenterBtn" class="btn ghost" type="button">⟲</button>
+        <div class="map-overlay-top-right">
+          <button id="mapRecenterBtn" class="btn ghost" type="button">⟲</button>
+        </div>
+      </div>
+      <div class="map-overlay-bottom">
+        <input id="mapSearchInput" class="map-search-input" type="search" placeholder="Search locations..." aria-label="Search map entries" />
+        <div class="map-filters">
+          <div class="map-filter" aria-label="Filter map by mood" role="radiogroup">
+            <button type="button" class="mood-filter-btn map-filter-btn active" data-filter="mood" data-mood="all" role="radio" aria-pressed="true">All</button>
+            <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="great" role="radio" aria-pressed="false">😊</button>
+            <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="ok" role="radio" aria-pressed="false">😐</button>
+            <button type="button" class="mood-filter-btn map-filter-btn" data-filter="mood" data-mood="bad" role="radio" aria-pressed="false">😞</button>
+          </div>
+          <select id="mapMarkerSelect" class="map-marker-select" aria-label="Map symbol style">
+            <option value="pin">Pins</option>
+            <option value="dot">Dots</option>
+            <option value="emoji">Emoji</option>
+          </select>
+        </div>
       </div>
     </div>
-    <div id="mapView" class="map-view"></div>
   </div>
 
   <button class="compose-fab" id="composeFab" type="button" aria-label="New entry">

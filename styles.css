@@ -931,26 +931,23 @@ textarea {
 
 .map-search-input {
   width: 100%;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: none;
-  background: rgba(142, 142, 147, 0.12);
-  font-size: 16px;
+  max-width: 400px;
+  box-shadow: var(--shadow);
+  border: 0.5px solid var(--border);
 }
 
-.map-marker-select {
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  background: var(--bg-secondary);
-  border: none;
-}
-
-.map-filter .mood-filter-btn,
-.map-filter-btn {
-  padding: 6px 10px;
-  font-size: 12px;
-  border-radius: 12px;
+.map-filters {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 8px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 400px;
+  justify-content: center;
 }
 
 .map-view {
@@ -964,6 +961,79 @@ textarea {
 .map-view .leaflet-container {
   width: 100%;
   height: 100%;
+}
+
+.map-view .leaflet-control-zoom {
+  display: none;
+}
+
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(var(--safe-area-top) + 12px) 16px calc(var(--safe-area-bottom) + 12px);
+  pointer-events: none;
+}
+
+.map-overlay-top,
+.map-overlay-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.map-overlay-top {
+  align-items: flex-start;
+}
+
+.map-overlay-bottom {
+  align-items: center;
+}
+
+.map-overlay-top-left,
+.map-overlay-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 8px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+}
+
+.map-overlay-top {
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.map-search-input {
+  width: 100%;
+  max-width: 400px;
+  box-shadow: var(--shadow);
+  border: 0.5px solid var(--border);
+}
+
+.map-filters {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 8px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 400px;
+  justify-content: center;
 }
 
 body.map-mode {
