@@ -426,6 +426,10 @@ function renderMemos() {
   if (mapShell) {
     mapShell.hidden = activeTab !== 'map';
   }
+  updateHeaderHeight();
+
+  const filtered = filterMemos(memos);
+  updateStats();
   
   if (activeTab === 'map') {
     if (paginationControls) paginationControls.hidden = true;
@@ -476,10 +480,10 @@ function renderMemos() {
     paginationControls.hidden = false;
     if (pageIndicator) pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
     if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
-    if (nextPageBtn) nextPageBtn.disabled = c
+    if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
   }
 
-  const dayGroups = groupMemosByDay(filtered);
+  const dayGroups = groupMemosByDay(pageItems);
 
   for (const { dayKey, memos: dayMemos } of dayGroups) {
     const section = document.createElement('section');
