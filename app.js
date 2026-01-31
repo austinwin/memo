@@ -447,12 +447,15 @@ function updateDailyGoal(wordsToday) {
 }
 
 function updateStats() {
-  if (!streakCountEl || !weekCountEl || !lastEntryLabelEl) return;
+  // If core stat elements are missing, don't attempt to render stats.
+  if (!streakCountEl || !weekCountEl) return;
+
+  const hasLastEntryLabel = !!lastEntryLabelEl;
 
   if (!memos.length) {
     streakCountEl.textContent = '0 days';
     weekCountEl.textContent = '0 entries';
-    lastEntryLabelEl.textContent = 'None yet';
+    if (hasLastEntryLabel) lastEntryLabelEl.textContent = 'None yet';
     if (todayWordsEl) todayWordsEl.textContent = '0 words';
     if (weekWordsEl) weekWordsEl.textContent = '0 words';
     updateDailyGoal(0);
@@ -521,12 +524,14 @@ function updateStats() {
 
   updateDailyGoal(wordsToday);
 
-  if (latestTimestamp) {
-    lastEntryLabelEl.textContent = formatDateTime(latestTimestamp);
-  } else if (dayKeys.has(todayKey)) {
-    lastEntryLabelEl.textContent = 'Today';
-  } else {
-    lastEntryLabelEl.textContent = 'None yet';
+  if (hasLastEntryLabel) {
+    if (latestTimestamp) {
+      lastEntryLabelEl.textContent = formatDateTime(latestTimestamp);
+    } else if (dayKeys.has(todayKey)) {
+      lastEntryLabelEl.textContent = 'Today';
+    } else {
+      lastEntryLabelEl.textContent = 'None yet';
+    }
   }
 }
 

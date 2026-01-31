@@ -1407,6 +1407,12 @@ body.map-mode .memo-list-section {
     font-size: 14px;
     color: var(--text-secondary);
   }
+
+  .memo-last-entry {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
   
   .memo-list-controls {
     padding: 0 20px;
