@@ -968,46 +968,85 @@ textarea {
 }
 
 .map-timeline-bar {
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--text-secondary);
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  color: var(--text);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   pointer-events: auto;
+  width: 100%;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.2s ease-out;
+}
+
+.map-timeline-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.map-timeline-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
 }
 
 .map-timeline-label {
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
   white-space: nowrap;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
+  flex: 1;
+  text-align: left;
+}
+
+.map-timeline-mode {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  border: none;
+  background: rgba(118, 118, 128, 0.12);
+  color: var(--text);
+  cursor: pointer;
+  appearance: none;
+  text-align: right;
+  font-weight: 500;
 }
 
 .map-timeline-slider {
   appearance: none;
-  width: 120px;
-  height: 24px;
-  transform: rotate(-90deg);
-  transform-origin: center;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.1);
+  outline: none;
+  position: relative;
+  cursor: pointer;
+  margin: 0;
 }
 
-@media (max-width: 400px) {
-  .map-timeline-bar {
-    left: 4px;
-  }
+.map-timeline-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border: 0.5px solid rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
 
-  .map-timeline-slider {
-    width: 100px;
-  }
+.map-timeline-slider::-webkit-slider-thumb:active {
+  transform: scale(1.1);
 }
 
 /* Glass Inputs/Buttons */

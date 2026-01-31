@@ -233,32 +233,65 @@ function getMapCounts(list) {
   return { entries, places: places.size };
 }
 
+const mapTimelineMode = document.getElementById('mapTimelineMode');
+
 function getMemoDate(memo) {
   const ts = memo.datetime || memo.createdAt;
   if (!ts) return null;
   const d = new Date(ts);
-  if (Number.isNaN(d.getTime())) return null;
-  return d;
+  return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function applyMapTimeline(list) {
+let timelineMode = 'cumulative'; // 'cumulative' | 'daily' | 'weekly' | 'monthly'
+
+function filterMemosByTimeline(list) {
   if (!mapTimelineEnabled || !mapTimelineSlider) return list;
+  
+  const value = Number(mapTimelineSlider.value);
+  if (value >= 100 && timelineMode === 'cumulative') return list;
 
   const dated = list
-    .map((memo) => ({ memo, date: getMemoDate(memo) }))
-    .filter((item) => item.date != null);
+    .map((m) => getMemoDate(m))
+    .filter((d) => d != null)
+    .sort((a, b) => a - b);
 
-  if (dated.length < 2) return list;
+  if (!dated.length) return list;
 
-  dated.sort((a, b) => a.date - b.date);
-  const value = Number(mapTimelineSlider.value) || 100;
-  const idx = Math.round(((dated.length - 1) * value) / 100);
-  const cutoff = dated[idx].date.getTime();
-
-  return list.filter((memo) => {
-    const d = getMemoDate(memo);
-    if (!d) return true;
-    return d.getTime() <= cutoff;
+  const idx = Math.min(
+    Math.round(((dated.length - 1) * value) / 100),
+    dated.length - 1
+  );
+  
+  const targetDate = dated[idx];
+  
+  if (timelineMode === 'cumulative') {
+    return list.filter((m) => {
+      const d = getMemoDate(m);
+      if (!d) return true; // keep undated
+      return d.getTime() <= targetDate.getTime();
+    });
+  }
+  
+  // For time-slice modes (daily/weekly/monthly)
+  return list.filter((m) => {
+    const d = getMemoDate(m);
+    if (!d) return false; // hide undated in slice mode
+    
+    // Check if d is in the same period as targetDate
+    if (timelineMode === 'daily') {
+      return d.toDateString() === targetDate.toDateString();
+    }
+    if (timelineMode === 'weekly') {
+      // Very simple week check: same year and roughly same week
+      const diffTime = Math.abs(d.getTime() - targetDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+      return diffDays <= 3; // Approx same week window
+    }
+    if (timelineMode === 'monthly') {
+      return d.getMonth() === targetDate.getMonth() && d.getFullYear() === targetDate.getFullYear();
+    }
+    
+    return false;
   });
 }
 
@@ -279,15 +312,38 @@ function updateMapTimelineUI(allMemos) {
   mapTimelineSlider.disabled = dated.length < 2;
 
   const value = Number(mapTimelineSlider.value) || 100;
-  if (dated.length === 1 || value >= 100) {
-    const last = dated[dated.length - 1];
-    mapTimelineLabel.textContent = `All time · up to ${formatDateTime(last.toISOString())}`;
-    return;
-  }
+  
+  // Calculate target date based on slider
+  const idx = Math.min(
+    Math.round(((dated.length - 1) * value) / 100),
+    dated.length - 1
+  );
+  const targetDate = dated[idx];
 
-  const idx = Math.round(((dated.length - 1) * value) / 100);
-  const cutoff = dated[idx];
-  mapTimelineLabel.textContent = `Up to ${formatDateTime(cutoff.toISOString())}`;
+  if (timelineMode === 'cumulative') {
+    if (value >= 100) {
+      const last = dated[dated.length - 1];
+      mapTimelineLabel.textContent = `All time · up to ${formatDateTime(last.toISOString())}`;
+    } else {
+      mapTimelineLabel.textContent = `Up to ${formatDateTime(targetDate.toISOString())}`;
+    }
+  } else {
+     // Format label for slice mode
+     const dateStr = targetDate.toLocaleDateString(undefined, {
+       year: 'numeric',
+       month: 'short',
+       day: 'numeric'
+     });
+     
+     if (timelineMode === 'daily') {
+       mapTimelineLabel.textContent = `Date: ${dateStr}`;
+     } else if (timelineMode === 'weekly') {
+       mapTimelineLabel.textContent = `Week of ${dateStr}`;
+     } else if (timelineMode === 'monthly') {
+       const monthStr = targetDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+       mapTimelineLabel.textContent = `Month: ${monthStr}`;
+     }
+  }
 }
 
 function syncSearchInputs(value) {
@@ -550,7 +606,7 @@ function renderMemos() {
   updateStats();
   
   if (activeTab === 'map') {
-    const mapList = mapTimelineEnabled ? applyMapTimeline(filtered) : filtered;
+    const mapList = mapTimelineEnabled ? filterMemosByTimeline(filtered) : filtered;
 
     if (paginationControls) paginationControls.hidden = true;
     if (window.memoLocation && typeof window.memoLocation.renderMapView === 'function') {
@@ -1219,6 +1275,15 @@ function init() {
         mapTimelineToggleBtn.classList.add('active');
         mapTimelineBar.hidden = false;
       }
+      if (activeTab === 'map') {
+        renderMemos();
+      }
+    });
+  }
+
+  if (mapTimelineMode) {
+    mapTimelineMode.addEventListener('change', () => {
+      timelineMode = mapTimelineMode.value;
       if (activeTab === 'map') {
         renderMemos();
       }

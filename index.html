@@ -196,8 +196,18 @@
           </button>
         </div>
         <div id="mapTimelineBar" class="map-timeline-bar" hidden>
-          <span id="mapTimelineLabel" class="map-timeline-label">All time</span>
-          <input id="mapTimelineSlider" class="map-timeline-slider" type="range" min="0" max="100" value="100" aria-label="Filter by time" />
+          <div class="map-timeline-row">
+            <input id="mapTimelineSlider" class="map-timeline-slider" type="range" min="0" max="100" value="100" aria-label="Filter by time" />
+          </div>
+          <div class="map-timeline-info-row">
+            <span id="mapTimelineLabel" class="map-timeline-label">All time</span>
+            <select id="mapTimelineMode" class="map-timeline-mode" aria-label="Timeline mode">
+              <option value="cumulative">Up to</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
