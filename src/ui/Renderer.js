@@ -187,10 +187,9 @@ export const Renderer = {
   
   updatePagination(controls, { currentPage, totalPages }, onPageChange) {
       if (!controls) return;
-      controls.hidden = totalPages <= 1;
+      // We rely on main.js to show/hide controls based on totalItems > ITEMS_PER_PAGE.
+      // But we can double check here or just focus on updating the state.
       
-      if (controls.hidden) return;
-
       const indicator = controls.querySelector('#pageIndicator');
       const prev = controls.querySelector('#prevPageBtn');
       const next = controls.querySelector('#nextPageBtn');
@@ -198,10 +197,6 @@ export const Renderer = {
       if (indicator) indicator.textContent = `Page ${currentPage} of ${totalPages}`;
       if (prev) {
           prev.disabled = currentPage <= 1;
-          // Clear old listeners - dirty but simplest without re-rendering the whole control or using weakmaps
-          // A better way is to attach listener once in main and just update disabled state here.
-          // But if we want Renderer to handle it, we assume the caller handles event binding or we do it here. 
-          // Since the buttons are static in HTML, it's better to BIND events in main.js and only UPDATE state here.
       }
       if (next) {
           next.disabled = currentPage >= totalPages;

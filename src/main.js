@@ -257,6 +257,23 @@ function render() {
           value: state.map.timelineValue,
           mode: state.map.timelineMode
       });
+
+      // Update Timeline Label
+      if (elements.mapTimelineLabel) {
+          if (state.map.timelineValue >= 100 && state.map.timelineMode === 'cumulative') {
+              elements.mapTimelineLabel.textContent = 'All time';
+          } else {
+              const targetDate = MemoManager.getTimelineDate(sorted, state.map.timelineValue);
+              if (targetDate) {
+                  // Format: "Oct 12, 2023" or similar
+                  elements.mapTimelineLabel.textContent = targetDate.toLocaleDateString(undefined, { 
+                      year: 'numeric', 
+                      month: 'short', 
+                      day: 'numeric' 
+                  });
+              }
+          }
+      }
       
       MapManager.renderMapView(mapList, {
           markerStyle: state.map.markerStyle,
@@ -276,6 +293,7 @@ function render() {
   // 4. List Rendering (Pagination)
   const totalItems = sorted.length;
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+  const showPagination = totalItems > ITEMS_PER_PAGE;
   
   if (state.view.currentPage > totalPages) state.view.currentPage = totalPages;
   if (state.view.currentPage < 1) state.view.currentPage = 1;
@@ -283,6 +301,10 @@ function render() {
   const start = (state.view.currentPage - 1) * ITEMS_PER_PAGE;
   const end = start + ITEMS_PER_PAGE;
   const pageItems = sorted.slice(start, end);
+
+  if (elements.paginationControls) {
+      elements.paginationControls.hidden = !showPagination;
+  }
 
   Renderer.renderList(elements.memoList, pageItems, elements.memoTemplate, {
       onEdit: startEditMemo,
@@ -300,10 +322,12 @@ function render() {
       isSearchActive: !!state.view.searchQuery
   });
 
-  Renderer.updatePagination(elements.paginationControls, {
-      currentPage: state.view.currentPage,
-      totalPages
-  });
+  if (showPagination) {
+      Renderer.updatePagination(elements.paginationControls, {
+          currentPage: state.view.currentPage,
+          totalPages
+      });
+  }
 }
 
 function updateBottomNav(tab) {
@@ -401,14 +425,37 @@ function bindEvents() {
     });
 
     // Map Specifics
+    elements.mapMoodSelect?.addEventListener('change', (e) => {
+        state.view.activeMoodFilter = e.target.value;
+        render();
+    });
+
+    elements.mapMarkerSelect?.addEventListener('change', (e) => {
+        state.map.markerStyle = e.target.value;
+        render();
+    });
+
+    elements.mapHeatToggleBtn?.addEventListener('click', () => {
+        state.map.heatEnabled = !state.map.heatEnabled;
+        if(elements.mapHeatToggleBtn) elements.mapHeatToggleBtn.setAttribute('aria-pressed', state.map.heatEnabled);
+        render();
+    });
+
     elements.mapTimelineToggleBtn?.addEventListener('click', () => {
         state.map.timelineEnabled = !state.map.timelineEnabled;
         if(elements.mapTimelineBar) elements.mapTimelineBar.hidden = !state.map.timelineEnabled;
+        const btn = elements.mapTimelineToggleBtn;
+        if (btn) btn.setAttribute('aria-pressed', state.map.timelineEnabled);
         render(); // triggers map update
     });
     
     elements.mapTimelineSlider?.addEventListener('input', (e) => {
         state.map.timelineValue = Number(e.target.value);
+        render();
+    });
+
+    elements.mapTimelineMode?.addEventListener('change', (e) => {
+        state.map.timelineMode = e.target.value;
         render();
     });
     

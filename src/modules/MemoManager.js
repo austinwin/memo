@@ -122,6 +122,22 @@ export const MemoManager = {
     });
   },
 
+  getTimelineDate(list, value) {
+    if (typeof value !== 'number') return null;
+    const dated = list
+      .map((m) => ({ memo: m, date: getMemoDate(m) }))
+      .filter((item) => item.date != null)
+      .sort((a, b) => a.date - b.date);
+
+    if (!dated.length) return null;
+
+    const idx = Math.min(
+      Math.round(((dated.length - 1) * value) / 100),
+      dated.length - 1
+    );
+    return dated[idx].date;
+  },
+
   groupMemosByDay(list, sortMode = 'newest') {
     const groups = new Map();
 
