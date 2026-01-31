@@ -425,7 +425,10 @@ function renderMemos() {
   document.body.classList.toggle('map-mode', activeTab === 'map');
   if (mapShell) {
     mapShell.hidden = activeTab !== 'map';
-  }paginationControls) paginationControls.hidden = true;
+  }
+  
+  if (activeTab === 'map') {
+    if (paginationControls) paginationControls.hidden = true;
     if (window.memoLocation && typeof window.memoLocation.renderMapView === 'function') {
       window.memoLocation.renderMapView(filtered, { markerStyle: mapMarkerStyle });
     }
@@ -473,15 +476,7 @@ function renderMemos() {
     paginationControls.hidden = false;
     if (pageIndicator) pageIndicator.textContent = `Page ${currentPage} of ${totalPages}`;
     if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
-    if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
-  }
-
-  const dayGroups = groupMemosByDay(pageItems
-      : 'No memos yet. Start by writing your first one.';
-    empty.style.fontSize = '0.85rem';
-    empty.style.color = 'var(--muted)';
-    memoList.appendChild(empty);
-    return;
+    if (nextPageBtn) nextPageBtn.disabled = c
   }
 
   const dayGroups = groupMemosByDay(filtered);
