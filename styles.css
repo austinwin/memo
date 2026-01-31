@@ -1010,6 +1010,10 @@ textarea {
   animation: slideDown 0.2s ease-out;
 }
 
+.map-timeline-bar[hidden] {
+  display: none !important;
+}
+
 .map-timeline-row {
   display: flex;
   align-items: center;
@@ -1509,6 +1513,10 @@ body.map-mode .memo-list-section {
   gap: 16px;
   margin: 24px 0 16px;
   padding-bottom: calc(var(--safe-area-bottom) + 80px); /* Add lots of space to avoid bottom nav/FAB overlap */
+}
+
+.pagination-controls[hidden] {
+  display: none !important;
 }
 
 .pagination-btn {

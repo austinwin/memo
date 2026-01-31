@@ -367,7 +367,8 @@ function render() {
   const pageItems = sorted.slice(start, end);
 
   if (elements.paginationControls) {
-      elements.paginationControls.hidden = !showPagination;
+      const shouldShow = showPagination && totalItems > 0;
+      elements.paginationControls.hidden = !shouldShow;
   }
 
   Renderer.renderList(elements.memoList, pageItems, elements.memoTemplate, {
@@ -387,7 +388,7 @@ function render() {
       onCompose: showComposeForm
   });
 
-  if (showPagination) {
+  if (showPagination && totalItems > 0) {
       Renderer.updatePagination(elements.paginationControls, {
           currentPage: state.view.currentPage,
           totalPages
