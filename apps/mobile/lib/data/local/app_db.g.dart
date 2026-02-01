@@ -46,6 +46,52 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryRow> {
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _moodMeta = const VerificationMeta('mood');
+  @override
+  late final GeneratedColumn<int> mood = GeneratedColumn<int>(
+    'mood',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pinnedMeta = const VerificationMeta('pinned');
+  @override
+  late final GeneratedColumn<bool> pinned = GeneratedColumn<bool>(
+    'pinned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pinned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _tagsJsonMeta = const VerificationMeta(
+    'tagsJson',
+  );
+  @override
+  late final GeneratedColumn<String> tagsJson = GeneratedColumn<String>(
+    'tags_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
+  static const VerificationMeta _tasksJsonMeta = const VerificationMeta(
+    'tasksJson',
+  );
+  @override
+  late final GeneratedColumn<String> tasksJson = GeneratedColumn<String>(
+    'tasks_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -74,6 +120,10 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryRow> {
     dayKey,
     title,
     body,
+    mood,
+    pinned,
+    tagsJson,
+    tasksJson,
     createdAt,
     updatedAt,
   ];
@@ -112,6 +162,30 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryRow> {
       context.handle(
         _bodyMeta,
         body.isAcceptableOrUnknown(data['body']!, _bodyMeta),
+      );
+    }
+    if (data.containsKey('mood')) {
+      context.handle(
+        _moodMeta,
+        mood.isAcceptableOrUnknown(data['mood']!, _moodMeta),
+      );
+    }
+    if (data.containsKey('pinned')) {
+      context.handle(
+        _pinnedMeta,
+        pinned.isAcceptableOrUnknown(data['pinned']!, _pinnedMeta),
+      );
+    }
+    if (data.containsKey('tags_json')) {
+      context.handle(
+        _tagsJsonMeta,
+        tagsJson.isAcceptableOrUnknown(data['tags_json']!, _tagsJsonMeta),
+      );
+    }
+    if (data.containsKey('tasks_json')) {
+      context.handle(
+        _tasksJsonMeta,
+        tasksJson.isAcceptableOrUnknown(data['tasks_json']!, _tasksJsonMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -155,6 +229,22 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryRow> {
         DriftSqlType.string,
         data['${effectivePrefix}body'],
       )!,
+      mood: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}mood'],
+      ),
+      pinned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pinned'],
+      )!,
+      tagsJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tags_json'],
+      )!,
+      tasksJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tasks_json'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -179,6 +269,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   final String dayKey;
   final String title;
   final String body;
+  final int? mood;
+  final bool pinned;
+  final String tagsJson;
+  final String tasksJson;
   final DateTime createdAt;
   final DateTime updatedAt;
   const EntryRow({
@@ -186,6 +280,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     required this.dayKey,
     required this.title,
     required this.body,
+    this.mood,
+    required this.pinned,
+    required this.tagsJson,
+    required this.tasksJson,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -196,6 +294,12 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     map['day_key'] = Variable<String>(dayKey);
     map['title'] = Variable<String>(title);
     map['body'] = Variable<String>(body);
+    if (!nullToAbsent || mood != null) {
+      map['mood'] = Variable<int>(mood);
+    }
+    map['pinned'] = Variable<bool>(pinned);
+    map['tags_json'] = Variable<String>(tagsJson);
+    map['tasks_json'] = Variable<String>(tasksJson);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -207,6 +311,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       dayKey: Value(dayKey),
       title: Value(title),
       body: Value(body),
+      mood: mood == null && nullToAbsent ? const Value.absent() : Value(mood),
+      pinned: Value(pinned),
+      tagsJson: Value(tagsJson),
+      tasksJson: Value(tasksJson),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -222,6 +330,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       dayKey: serializer.fromJson<String>(json['dayKey']),
       title: serializer.fromJson<String>(json['title']),
       body: serializer.fromJson<String>(json['body']),
+      mood: serializer.fromJson<int?>(json['mood']),
+      pinned: serializer.fromJson<bool>(json['pinned']),
+      tagsJson: serializer.fromJson<String>(json['tagsJson']),
+      tasksJson: serializer.fromJson<String>(json['tasksJson']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -234,6 +346,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       'dayKey': serializer.toJson<String>(dayKey),
       'title': serializer.toJson<String>(title),
       'body': serializer.toJson<String>(body),
+      'mood': serializer.toJson<int?>(mood),
+      'pinned': serializer.toJson<bool>(pinned),
+      'tagsJson': serializer.toJson<String>(tagsJson),
+      'tasksJson': serializer.toJson<String>(tasksJson),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -244,6 +360,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     String? dayKey,
     String? title,
     String? body,
+    Value<int?> mood = const Value.absent(),
+    bool? pinned,
+    String? tagsJson,
+    String? tasksJson,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => EntryRow(
@@ -251,6 +371,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     dayKey: dayKey ?? this.dayKey,
     title: title ?? this.title,
     body: body ?? this.body,
+    mood: mood.present ? mood.value : this.mood,
+    pinned: pinned ?? this.pinned,
+    tagsJson: tagsJson ?? this.tagsJson,
+    tasksJson: tasksJson ?? this.tasksJson,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -260,6 +384,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
       dayKey: data.dayKey.present ? data.dayKey.value : this.dayKey,
       title: data.title.present ? data.title.value : this.title,
       body: data.body.present ? data.body.value : this.body,
+      mood: data.mood.present ? data.mood.value : this.mood,
+      pinned: data.pinned.present ? data.pinned.value : this.pinned,
+      tagsJson: data.tagsJson.present ? data.tagsJson.value : this.tagsJson,
+      tasksJson: data.tasksJson.present ? data.tasksJson.value : this.tasksJson,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -272,6 +400,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           ..write('dayKey: $dayKey, ')
           ..write('title: $title, ')
           ..write('body: $body, ')
+          ..write('mood: $mood, ')
+          ..write('pinned: $pinned, ')
+          ..write('tagsJson: $tagsJson, ')
+          ..write('tasksJson: $tasksJson, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -279,8 +411,18 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, dayKey, title, body, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    dayKey,
+    title,
+    body,
+    mood,
+    pinned,
+    tagsJson,
+    tasksJson,
+    createdAt,
+    updatedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -289,6 +431,10 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
           other.dayKey == this.dayKey &&
           other.title == this.title &&
           other.body == this.body &&
+          other.mood == this.mood &&
+          other.pinned == this.pinned &&
+          other.tagsJson == this.tagsJson &&
+          other.tasksJson == this.tasksJson &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -298,6 +444,10 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
   final Value<String> dayKey;
   final Value<String> title;
   final Value<String> body;
+  final Value<int?> mood;
+  final Value<bool> pinned;
+  final Value<String> tagsJson;
+  final Value<String> tasksJson;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -306,6 +456,10 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
     this.dayKey = const Value.absent(),
     this.title = const Value.absent(),
     this.body = const Value.absent(),
+    this.mood = const Value.absent(),
+    this.pinned = const Value.absent(),
+    this.tagsJson = const Value.absent(),
+    this.tasksJson = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -315,6 +469,10 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
     required String dayKey,
     this.title = const Value.absent(),
     this.body = const Value.absent(),
+    this.mood = const Value.absent(),
+    this.pinned = const Value.absent(),
+    this.tagsJson = const Value.absent(),
+    this.tasksJson = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -327,6 +485,10 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
     Expression<String>? dayKey,
     Expression<String>? title,
     Expression<String>? body,
+    Expression<int>? mood,
+    Expression<bool>? pinned,
+    Expression<String>? tagsJson,
+    Expression<String>? tasksJson,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -336,6 +498,10 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
       if (dayKey != null) 'day_key': dayKey,
       if (title != null) 'title': title,
       if (body != null) 'body': body,
+      if (mood != null) 'mood': mood,
+      if (pinned != null) 'pinned': pinned,
+      if (tagsJson != null) 'tags_json': tagsJson,
+      if (tasksJson != null) 'tasks_json': tasksJson,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -347,6 +513,10 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
     Value<String>? dayKey,
     Value<String>? title,
     Value<String>? body,
+    Value<int?>? mood,
+    Value<bool>? pinned,
+    Value<String>? tagsJson,
+    Value<String>? tasksJson,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -356,6 +526,10 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
       dayKey: dayKey ?? this.dayKey,
       title: title ?? this.title,
       body: body ?? this.body,
+      mood: mood ?? this.mood,
+      pinned: pinned ?? this.pinned,
+      tagsJson: tagsJson ?? this.tagsJson,
+      tasksJson: tasksJson ?? this.tasksJson,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -377,6 +551,18 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
     if (body.present) {
       map['body'] = Variable<String>(body.value);
     }
+    if (mood.present) {
+      map['mood'] = Variable<int>(mood.value);
+    }
+    if (pinned.present) {
+      map['pinned'] = Variable<bool>(pinned.value);
+    }
+    if (tagsJson.present) {
+      map['tags_json'] = Variable<String>(tagsJson.value);
+    }
+    if (tasksJson.present) {
+      map['tasks_json'] = Variable<String>(tasksJson.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -396,6 +582,10 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
           ..write('dayKey: $dayKey, ')
           ..write('title: $title, ')
           ..write('body: $body, ')
+          ..write('mood: $mood, ')
+          ..write('pinned: $pinned, ')
+          ..write('tagsJson: $tagsJson, ')
+          ..write('tasksJson: $tasksJson, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -421,6 +611,10 @@ typedef $$EntriesTableCreateCompanionBuilder =
       required String dayKey,
       Value<String> title,
       Value<String> body,
+      Value<int?> mood,
+      Value<bool> pinned,
+      Value<String> tagsJson,
+      Value<String> tasksJson,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<int> rowid,
@@ -431,6 +625,10 @@ typedef $$EntriesTableUpdateCompanionBuilder =
       Value<String> dayKey,
       Value<String> title,
       Value<String> body,
+      Value<int?> mood,
+      Value<bool> pinned,
+      Value<String> tagsJson,
+      Value<String> tasksJson,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -461,6 +659,26 @@ class $$EntriesTableFilterComposer extends Composer<_$AppDb, $EntriesTable> {
 
   ColumnFilters<String> get body => $composableBuilder(
     column: $table.body,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get mood => $composableBuilder(
+    column: $table.mood,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pinned => $composableBuilder(
+    column: $table.pinned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tagsJson => $composableBuilder(
+    column: $table.tagsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tasksJson => $composableBuilder(
+    column: $table.tasksJson,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -503,6 +721,26 @@ class $$EntriesTableOrderingComposer extends Composer<_$AppDb, $EntriesTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get mood => $composableBuilder(
+    column: $table.mood,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pinned => $composableBuilder(
+    column: $table.pinned,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tagsJson => $composableBuilder(
+    column: $table.tagsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tasksJson => $composableBuilder(
+    column: $table.tasksJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -534,6 +772,18 @@ class $$EntriesTableAnnotationComposer
 
   GeneratedColumn<String> get body =>
       $composableBuilder(column: $table.body, builder: (column) => column);
+
+  GeneratedColumn<int> get mood =>
+      $composableBuilder(column: $table.mood, builder: (column) => column);
+
+  GeneratedColumn<bool> get pinned =>
+      $composableBuilder(column: $table.pinned, builder: (column) => column);
+
+  GeneratedColumn<String> get tagsJson =>
+      $composableBuilder(column: $table.tagsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get tasksJson =>
+      $composableBuilder(column: $table.tasksJson, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -574,6 +824,10 @@ class $$EntriesTableTableManager
                 Value<String> dayKey = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> body = const Value.absent(),
+                Value<int?> mood = const Value.absent(),
+                Value<bool> pinned = const Value.absent(),
+                Value<String> tagsJson = const Value.absent(),
+                Value<String> tasksJson = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -582,6 +836,10 @@ class $$EntriesTableTableManager
                 dayKey: dayKey,
                 title: title,
                 body: body,
+                mood: mood,
+                pinned: pinned,
+                tagsJson: tagsJson,
+                tasksJson: tasksJson,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -592,6 +850,10 @@ class $$EntriesTableTableManager
                 required String dayKey,
                 Value<String> title = const Value.absent(),
                 Value<String> body = const Value.absent(),
+                Value<int?> mood = const Value.absent(),
+                Value<bool> pinned = const Value.absent(),
+                Value<String> tagsJson = const Value.absent(),
+                Value<String> tasksJson = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<int> rowid = const Value.absent(),
@@ -600,6 +862,10 @@ class $$EntriesTableTableManager
                 dayKey: dayKey,
                 title: title,
                 body: body,
+                mood: mood,
+                pinned: pinned,
+                tagsJson: tagsJson,
+                tasksJson: tasksJson,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

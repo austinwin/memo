@@ -16,6 +16,13 @@ class Entries extends Table {
 
   TextColumn get title => text().withDefault(const Constant(''))();
   TextColumn get body => text().withDefault(const Constant(''))();
+
+  // Parity columns
+  IntColumn get mood => integer().nullable()();
+  BoolColumn get pinned => boolean().withDefault(const Constant(false))();
+  TextColumn get tagsJson => text().withDefault(const Constant('[]'))();
+  TextColumn get tasksJson => text().withDefault(const Constant('[]'))();
+
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -31,7 +38,7 @@ class AppDb extends _$AppDb {
   AppDb.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -48,20 +55,51 @@ class AppDb extends _$AppDb {
               'CREATE INDEX IF NOT EXISTS entries_day_key_idx ON entries(day_key)',
             );
           }
+          if (from < 3) {
+            await m.addColumn(entries, entries.mood);
+            await m.addColumn(entries, entries.pinned);
+            await m.addColumn(entries, entries.tagsJson);
+            await m.addColumn(entries, entries.tasksJson);
+          }
         },
       );
 
   // Queries
 
-  Stream<List<EntryRow>> watchEntries() {
-    return (select(entries)..orderBy([(t) => OrderingTerm.desc(t.updatedAt)])).watch();
+  Stream<List<EntryRow>> watchEntries({String query = ''}) {
+    final q = query.trim();
+
+    final sel = select(entries);
+    if (q.isNotEmpty) {
+      final like = '%$q%';
+      sel.where(
+        (t) => t.title.like(like) | t.body.like(like),
+      );
+    }
+
+    sel.orderBy([
+      (t) => OrderingTerm.desc(t.pinned),
+      (t) => OrderingTerm.desc(t.updatedAt),
+    ]);
+
+    return sel.watch();
   }
 
-  Stream<List<EntryRow>> watchEntriesForDayKey(String key) {
-    return (select(entries)
-          ..where((t) => t.dayKey.equals(key))
-          ..orderBy([(t) => OrderingTerm.desc(t.updatedAt)]))
-        .watch();
+  Stream<List<EntryRow>> watchEntriesForDayKey(String key, {String query = ''}) {
+    final q = query.trim();
+
+    final sel = select(entries)..where((t) => t.dayKey.equals(key));
+    if (q.isNotEmpty) {
+      final like = '%$q%';
+      sel.where((t) => t.title.like(like) | t.body.like(like));
+    }
+
+    sel.orderBy([
+      (t) => OrderingTerm.desc(t.pinned),
+      (t) => OrderingTerm.desc(t.updatedAt),
+    ]);
+
+    return sel.watch();
   }
 
   Stream<Map<String, int>> watchDayCountsForPrefix(String prefix) {
