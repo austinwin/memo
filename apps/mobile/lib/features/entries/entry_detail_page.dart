@@ -44,8 +44,24 @@ class EntryDetailPage extends ConsumerWidget {
               IconButton(
                 tooltip: 'Delete',
                 onPressed: () async {
+                  final deleted = entry;
                   await repo.delete(entry.id);
-                  if (context.mounted) context.pop();
+                  if (!context.mounted) return;
+
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Entry deleted'),
+                      action: SnackBarAction(
+                        label: 'Undo',
+                        onPressed: () async {
+                          await repo.save(deleted);
+                        },
+                      ),
+                    ),
+                  );
+
+                  context.pop();
                 },
                 icon: const Icon(Icons.delete_outline),
               ),
