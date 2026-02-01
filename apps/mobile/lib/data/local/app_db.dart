@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 
-import 'app_db_io.dart' if (dart.library.html) 'app_db_web.dart';
+import 'connection/connection.dart';
 
 part 'app_db.g.dart';
 
