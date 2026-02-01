@@ -5,6 +5,7 @@ import { MapManager } from './modules/MapManager.js';
 import { Renderer } from './ui/Renderer.js';
 import { initToast, showToast, updateHeaderHeight } from './ui/Toast.js';
 import { TagFilters } from './ui/TagFilters.js';
+import { MemoDetail } from './ui/MemoDetail.js';
 import { PWA } from './modules/PWA.js';
 import { isMobileView } from './utils/helpers.js';
 import { getDayKey } from './utils/date.js';
@@ -21,6 +22,7 @@ const state = {
     activeTagFilter: 'all',
     searchQuery: '',
     currentPage: 1,
+    selectedMemoId: null,
   },
   map: {
     heatEnabled: false,
@@ -99,6 +101,7 @@ const elements = {
   importBtn: document.getElementById('importBtn'),
   importInput: document.getElementById('importInput'),
   appHeader: document.querySelector('.app-header'),
+  memoDetailSection: document.getElementById('memoDetailSection'),
 };
 
 function setSearchQuery(value) {
@@ -170,6 +173,51 @@ function save() {
   render();
 }
 
+function openMemoDetail(id) {
+  const memo = state.memos.find((m) => m.id === id);
+  if (!memo) return;
+  // Ensure compose is closed.
+  if (elements.composeSection) elements.composeSection.classList.remove('visible');
+
+  state.view.selectedMemoId = id;
+  document.body.classList.add('detail-mode');
+  MemoDetail.render(elements.memoDetailSection, memo, {
+    onClose: closeMemoDetail,
+    onEdit: (memoId) => {
+      closeMemoDetail();
+      startEditMemo(memoId);
+    },
+    onDelete: (memoId) => {
+      closeMemoDetail();
+      deleteMemo(memoId);
+    },
+    onPin: (memoId) => {
+      togglePinMemo(memoId);
+      openMemoDetail(memoId);
+    },
+    onOpenMap: (memoId) => {
+      const m = state.memos.find((x) => x.id === memoId);
+      if (!m) return;
+      state.map.lastListTab = state.view.activeTab;
+      state.view.activeTab = 'map';
+      if (elements.viewSelect) elements.viewSelect.value = 'map';
+      updateBottomNav('map');
+      closeMemoDetail();
+      render();
+      MapManager.focusMemo(m.id);
+    },
+  });
+}
+
+function closeMemoDetail() {
+  state.view.selectedMemoId = null;
+  document.body.classList.remove('detail-mode');
+  if (elements.memoDetailSection) {
+    elements.memoDetailSection.hidden = true;
+    elements.memoDetailSection.innerHTML = '';
+  }
+}
+
 function startEditMemo(id) {
   const memo = state.memos.find(m => m.id === id);
   if (!memo) return;
@@ -234,6 +282,9 @@ function toggleTodoDone(id, isDone) {
 }
 
 function showComposeForm() {
+    // If detail is open, close it first.
+    if (state.view.selectedMemoId) closeMemoDetail();
+
     if (elements.composeSection) {
         elements.composeSection.classList.add('visible');
         if (!state.editing.id) {
@@ -422,6 +473,7 @@ function render() {
   }
 
   Renderer.renderList(elements.memoList, pageItems, elements.memoTemplate, {
+      onOpenDetail: openMemoDetail,
       onEdit: startEditMemo,
       onDelete: deleteMemo,
       onPin: togglePinMemo,
@@ -457,6 +509,12 @@ function updateBottomNav(tab) {
 // --- Event Wiring ---
 
 function bindEvents() {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && state.view.selectedMemoId) {
+        closeMemoDetail();
+      }
+    });
+
     // Form
     elements.memoForm?.addEventListener('submit', (e) => {
         e.preventDefault();
