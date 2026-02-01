@@ -28,12 +28,13 @@ export const Storage = {
       if (parsed && typeof parsed === 'object') {
         return {
           dailyWordGoal: parsed.dailyWordGoal ?? null,
+          dailyFocusByDate: parsed.dailyFocusByDate ?? {},
         };
       }
     } catch (e) {
       console.error('Failed to load settings', e);
     }
-    return { dailyWordGoal: null };
+    return { dailyWordGoal: null, dailyFocusByDate: {} };
   },
 
   saveSettings(settings) {

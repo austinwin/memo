@@ -10,6 +10,7 @@ A minimal, offline-first memo diary Progressive Web App (PWA).
 - 🏷️ **Tags**: Add lightweight tags to entries and filter your log by tag (e.g. marketing, product, ops)
 - 📅 **Writing Stats**: Streak, last entry, week count, word counts, daily goal progress
 - 🎯 **Daily Goal**: Set a daily writing goal and see progress
+- 💡 **Daily Focus**: Capture a single focus for each day so you always know what matters most
 - 🔍 **Search & Filter**: Search by text, filter by mood, sort by date/title
 - 🗺️ **Map View**: Visualize memos with locations on an interactive map (Leaflet)
 - 📍 **Location Picker**: Add/edit location with symbol and label, use current location

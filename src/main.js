@@ -6,6 +6,7 @@ import { Renderer } from './ui/Renderer.js';
 import { initToast, showToast, updateHeaderHeight } from './ui/Toast.js';
 import { PWA } from './modules/PWA.js';
 import { isMobileView } from './utils/helpers.js';
+import { getDayKey } from './utils/date.js';
 
 // --- State ---
 const state = {
@@ -70,6 +71,8 @@ const elements = {
   weekWordsEl: document.getElementById('weekWords'),
   dailyGoalLabel: document.getElementById('dailyGoalLabel'),
   dailyGoalChip: document.getElementById('dailyGoalChip'),
+  dailyFocusLabel: document.getElementById('dailyFocusLabel'),
+  dailyFocusChip: document.getElementById('dailyFocusChip'),
   
   // Map Timeline
   mapTimelineToggleBtn: document.getElementById('mapTimelineToggleBtn'),
@@ -130,6 +133,9 @@ function init() {
   })); // Basic normalization
   
   state.settings = Storage.loadSettings();
+  if (!state.settings.dailyFocusByDate || typeof state.settings.dailyFocusByDate !== 'object') {
+    state.settings.dailyFocusByDate = {};
+  }
 
   // Init Map Manager
   MapManager.init({
@@ -326,7 +332,9 @@ function render() {
 
   // 2. Stats
   const stats = MemoManager.calculateStats(state.memos);
-  Renderer.updateStatsDOM(stats, elements, state.settings.dailyWordGoal);
+  const todayKey = getDayKey();
+  const dailyFocus = state.settings.dailyFocusByDate?.[todayKey] || '';
+  Renderer.updateStatsDOM(stats, elements, state.settings.dailyWordGoal, { dailyFocus });
 
   // 3. Map Rendering
   if (state.view.activeTab === 'map') {
@@ -613,6 +621,28 @@ function bindEvents() {
         Storage.saveSettings(state.settings);
         render();
         showToast('Daily goal updated');
+    });
+
+    elements.dailyFocusChip?.addEventListener('click', () => {
+        const todayKey = getDayKey();
+        const current = (state.settings.dailyFocusByDate && state.settings.dailyFocusByDate[todayKey]) || '';
+        const input = window.prompt("Set a simple focus for today (leave blank to clear):", current);
+        if (input == null) return;
+        const trimmed = String(input).trim();
+        if (!state.settings.dailyFocusByDate || typeof state.settings.dailyFocusByDate !== 'object') {
+            state.settings.dailyFocusByDate = {};
+        }
+        if (!trimmed) {
+            delete state.settings.dailyFocusByDate[todayKey];
+            Storage.saveSettings(state.settings);
+            render();
+            showToast("Today's focus cleared");
+            return;
+        }
+        state.settings.dailyFocusByDate[todayKey] = trimmed;
+        Storage.saveSettings(state.settings);
+        render();
+        showToast("Today's focus updated");
     });
 
     // Desktop View Toggle

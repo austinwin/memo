@@ -179,8 +179,8 @@ export const Renderer = {
     container.appendChild(wrapper);
   },
 
-  updateStatsDOM(stats, elements, goal) {
-    const { streakCountEl, weekCountEl, todayWordsEl, weekWordsEl, lastEntryLabelEl, dailyGoalLabel } = elements;
+  updateStatsDOM(stats, elements, goal, { dailyFocus } = {}) {
+    const { streakCountEl, weekCountEl, todayWordsEl, weekWordsEl, lastEntryLabelEl, dailyGoalLabel, dailyFocusLabel } = elements;
     
     if (streakCountEl) streakCountEl.textContent = `${stats.streak} day${stats.streak === 1 ? '' : 's'}`;
     if (weekCountEl) weekCountEl.textContent = `${stats.entriesThisWeek} entr${stats.entriesThisWeek === 1 ? 'y' : 'ies'}`;
@@ -205,6 +205,18 @@ export const Renderer = {
             lastEntryLabelEl.textContent = formatDateTime(stats.latestTimestamp);
         } else {
             lastEntryLabelEl.textContent = 'None yet';
+        }
+    }
+
+    if (dailyFocusLabel) {
+        if (dailyFocus && dailyFocus.trim()) {
+            const trimmed = dailyFocus.trim();
+            const maxLen = 80;
+            dailyFocusLabel.textContent = trimmed.length > maxLen
+              ? trimmed.slice(0, maxLen - 1) + '…'
+              : trimmed;
+        } else {
+            dailyFocusLabel.textContent = "Set today's focus";
         }
     }
   },
