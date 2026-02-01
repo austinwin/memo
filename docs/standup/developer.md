@@ -5,15 +5,20 @@
 - **DB decision:** Drift (SQLite).
 
 ## Shipped (main)
-- Added Drift + sqlite deps and ran codegen.
-- Implemented core `Entry` domain model.
-- Implemented local persistence with Drift (`entries` table) + `EntryRepository`.
-- Wired mobile UX flow with `go_router` + Riverpod:
-  - Entry list
-  - Entry detail
-  - Entry editor (create + edit)
-- Fixed widget test teardown by using an in-memory Drift DB override; `flutter test` passes.
+- Added `table_calendar` and implemented **Calendar MVP**:
+  - Month view w/ heat + dots
+  - Tap day → day entries list → create/edit
+- Extended Drift schema for calendar/day browsing:
+  - `dayKey` column (yyyy-MM-dd)
+  - day-scoped queries + month day-counts
+- Added delete UX improvements:
+  - Swipe-to-delete on list w/ **Undo snackbar**
+  - Delete on detail w/ **Undo snackbar**
+- Improved empty state copy.
+- `flutter test` passes.
 
 ## Next
-- Calendar browsing flow (day view → entries for day → editor).
-- UX upgrades: autosave, better empty-state, delete confirmation/snackbar, title-from-body heuristics.
+- Calendar MVP polishing:
+  - make day list open detail (not editor) and add an Edit affordance
+  - better heat scaling / markers
+- Editor UX: autosave, title-from-body heuristics.
