@@ -17,6 +17,15 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _dayKeyMeta = const VerificationMeta('dayKey');
+  @override
+  late final GeneratedColumn<String> dayKey = GeneratedColumn<String>(
+    'day_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -60,7 +69,14 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryRow> {
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, title, body, createdAt, updatedAt];
+  List<GeneratedColumn> get $columns => [
+    id,
+    dayKey,
+    title,
+    body,
+    createdAt,
+    updatedAt,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -77,6 +93,14 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryRow> {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('day_key')) {
+      context.handle(
+        _dayKeyMeta,
+        dayKey.isAcceptableOrUnknown(data['day_key']!, _dayKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dayKeyMeta);
     }
     if (data.containsKey('title')) {
       context.handle(
@@ -119,6 +143,10 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryRow> {
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
+      dayKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day_key'],
+      )!,
       title: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}title'],
@@ -146,12 +174,16 @@ class $EntriesTable extends Entries with TableInfo<$EntriesTable, EntryRow> {
 
 class EntryRow extends DataClass implements Insertable<EntryRow> {
   final String id;
+
+  /// Local-day key (yyyy-MM-dd) for fast calendar + day browsing.
+  final String dayKey;
   final String title;
   final String body;
   final DateTime createdAt;
   final DateTime updatedAt;
   const EntryRow({
     required this.id,
+    required this.dayKey,
     required this.title,
     required this.body,
     required this.createdAt,
@@ -161,6 +193,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    map['day_key'] = Variable<String>(dayKey);
     map['title'] = Variable<String>(title);
     map['body'] = Variable<String>(body);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -171,6 +204,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   EntriesCompanion toCompanion(bool nullToAbsent) {
     return EntriesCompanion(
       id: Value(id),
+      dayKey: Value(dayKey),
       title: Value(title),
       body: Value(body),
       createdAt: Value(createdAt),
@@ -185,6 +219,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return EntryRow(
       id: serializer.fromJson<String>(json['id']),
+      dayKey: serializer.fromJson<String>(json['dayKey']),
       title: serializer.fromJson<String>(json['title']),
       body: serializer.fromJson<String>(json['body']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
@@ -196,6 +231,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'dayKey': serializer.toJson<String>(dayKey),
       'title': serializer.toJson<String>(title),
       'body': serializer.toJson<String>(body),
       'createdAt': serializer.toJson<DateTime>(createdAt),
@@ -205,12 +241,14 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
 
   EntryRow copyWith({
     String? id,
+    String? dayKey,
     String? title,
     String? body,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => EntryRow(
     id: id ?? this.id,
+    dayKey: dayKey ?? this.dayKey,
     title: title ?? this.title,
     body: body ?? this.body,
     createdAt: createdAt ?? this.createdAt,
@@ -219,6 +257,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   EntryRow copyWithCompanion(EntriesCompanion data) {
     return EntryRow(
       id: data.id.present ? data.id.value : this.id,
+      dayKey: data.dayKey.present ? data.dayKey.value : this.dayKey,
       title: data.title.present ? data.title.value : this.title,
       body: data.body.present ? data.body.value : this.body,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -230,6 +269,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   String toString() {
     return (StringBuffer('EntryRow(')
           ..write('id: $id, ')
+          ..write('dayKey: $dayKey, ')
           ..write('title: $title, ')
           ..write('body: $body, ')
           ..write('createdAt: $createdAt, ')
@@ -239,12 +279,14 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
   }
 
   @override
-  int get hashCode => Object.hash(id, title, body, createdAt, updatedAt);
+  int get hashCode =>
+      Object.hash(id, dayKey, title, body, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is EntryRow &&
           other.id == this.id &&
+          other.dayKey == this.dayKey &&
           other.title == this.title &&
           other.body == this.body &&
           other.createdAt == this.createdAt &&
@@ -253,6 +295,7 @@ class EntryRow extends DataClass implements Insertable<EntryRow> {
 
 class EntriesCompanion extends UpdateCompanion<EntryRow> {
   final Value<String> id;
+  final Value<String> dayKey;
   final Value<String> title;
   final Value<String> body;
   final Value<DateTime> createdAt;
@@ -260,6 +303,7 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
   final Value<int> rowid;
   const EntriesCompanion({
     this.id = const Value.absent(),
+    this.dayKey = const Value.absent(),
     this.title = const Value.absent(),
     this.body = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -268,16 +312,19 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
   });
   EntriesCompanion.insert({
     required String id,
+    required String dayKey,
     this.title = const Value.absent(),
     this.body = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
+       dayKey = Value(dayKey),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<EntryRow> custom({
     Expression<String>? id,
+    Expression<String>? dayKey,
     Expression<String>? title,
     Expression<String>? body,
     Expression<DateTime>? createdAt,
@@ -286,6 +333,7 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (dayKey != null) 'day_key': dayKey,
       if (title != null) 'title': title,
       if (body != null) 'body': body,
       if (createdAt != null) 'created_at': createdAt,
@@ -296,6 +344,7 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
 
   EntriesCompanion copyWith({
     Value<String>? id,
+    Value<String>? dayKey,
     Value<String>? title,
     Value<String>? body,
     Value<DateTime>? createdAt,
@@ -304,6 +353,7 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
   }) {
     return EntriesCompanion(
       id: id ?? this.id,
+      dayKey: dayKey ?? this.dayKey,
       title: title ?? this.title,
       body: body ?? this.body,
       createdAt: createdAt ?? this.createdAt,
@@ -317,6 +367,9 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (dayKey.present) {
+      map['day_key'] = Variable<String>(dayKey.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -340,6 +393,7 @@ class EntriesCompanion extends UpdateCompanion<EntryRow> {
   String toString() {
     return (StringBuffer('EntriesCompanion(')
           ..write('id: $id, ')
+          ..write('dayKey: $dayKey, ')
           ..write('title: $title, ')
           ..write('body: $body, ')
           ..write('createdAt: $createdAt, ')
@@ -364,6 +418,7 @@ abstract class _$AppDb extends GeneratedDatabase {
 typedef $$EntriesTableCreateCompanionBuilder =
     EntriesCompanion Function({
       required String id,
+      required String dayKey,
       Value<String> title,
       Value<String> body,
       required DateTime createdAt,
@@ -373,6 +428,7 @@ typedef $$EntriesTableCreateCompanionBuilder =
 typedef $$EntriesTableUpdateCompanionBuilder =
     EntriesCompanion Function({
       Value<String> id,
+      Value<String> dayKey,
       Value<String> title,
       Value<String> body,
       Value<DateTime> createdAt,
@@ -390,6 +446,11 @@ class $$EntriesTableFilterComposer extends Composer<_$AppDb, $EntriesTable> {
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get dayKey => $composableBuilder(
+    column: $table.dayKey,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -427,6 +488,11 @@ class $$EntriesTableOrderingComposer extends Composer<_$AppDb, $EntriesTable> {
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get dayKey => $composableBuilder(
+    column: $table.dayKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get title => $composableBuilder(
     column: $table.title,
     builder: (column) => ColumnOrderings(column),
@@ -459,6 +525,9 @@ class $$EntriesTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get dayKey =>
+      $composableBuilder(column: $table.dayKey, builder: (column) => column);
 
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
@@ -502,6 +571,7 @@ class $$EntriesTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
+                Value<String> dayKey = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> body = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
@@ -509,6 +579,7 @@ class $$EntriesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => EntriesCompanion(
                 id: id,
+                dayKey: dayKey,
                 title: title,
                 body: body,
                 createdAt: createdAt,
@@ -518,6 +589,7 @@ class $$EntriesTableTableManager
           createCompanionCallback:
               ({
                 required String id,
+                required String dayKey,
                 Value<String> title = const Value.absent(),
                 Value<String> body = const Value.absent(),
                 required DateTime createdAt,
@@ -525,6 +597,7 @@ class $$EntriesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => EntriesCompanion.insert(
                 id: id,
+                dayKey: dayKey,
                 title: title,
                 body: body,
                 createdAt: createdAt,
