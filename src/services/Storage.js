@@ -29,12 +29,13 @@ export const Storage = {
         return {
           dailyWordGoal: parsed.dailyWordGoal ?? null,
           dailyFocusByDate: parsed.dailyFocusByDate ?? {},
+          theme: parsed.theme ?? 'system',
         };
       }
     } catch (e) {
       console.error('Failed to load settings', e);
     }
-    return { dailyWordGoal: null, dailyFocusByDate: {} };
+    return { dailyWordGoal: null, dailyFocusByDate: {}, theme: 'system' };
   },
 
   saveSettings(settings) {

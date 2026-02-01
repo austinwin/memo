@@ -98,6 +98,7 @@ const elements = {
   exportBtn: document.getElementById('exportBtn'),
   importBtn: document.getElementById('importBtn'),
   importInput: document.getElementById('importInput'),
+  themeToggleBtn: document.getElementById('themeToggleBtn'),
   appHeader: document.querySelector('.app-header'),
 };
 
@@ -125,6 +126,22 @@ function syncSearchInputs() {
 
 // --- Initialization ---
 
+function applyTheme(theme) {
+  const next = theme && ['system', 'light', 'dark'].includes(theme) ? theme : 'system';
+  if (next === 'system') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', next);
+  }
+}
+
+function cycleTheme(current) {
+  // system -> light -> dark -> system
+  if (current === 'system') return 'light';
+  if (current === 'light') return 'dark';
+  return 'system';
+}
+
 function init() {
   initToast();
   PWA.init();
@@ -138,6 +155,7 @@ function init() {
   if (!state.settings.dailyFocusByDate || typeof state.settings.dailyFocusByDate !== 'object') {
     state.settings.dailyFocusByDate = {};
   }
+  applyTheme(state.settings.theme);
 
   // Init Map Manager
   MapManager.init({
@@ -687,6 +705,13 @@ function bindEvents() {
         });
     });
     
+    elements.themeToggleBtn?.addEventListener('click', () => {
+        state.settings.theme = cycleTheme(state.settings.theme);
+        Storage.saveSettings(state.settings);
+        applyTheme(state.settings.theme);
+        showToast(`Theme: ${state.settings.theme}`);
+    });
+
     // Export/Import
     elements.exportBtn?.addEventListener('click', () => {
         Storage.exportMemosToFile(state.memos);
