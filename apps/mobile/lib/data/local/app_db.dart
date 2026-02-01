@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+
+import 'app_db_io.dart' if (dart.library.html) 'app_db_web.dart';
 
 part 'app_db.g.dart';
 
@@ -32,7 +29,7 @@ class Entries extends Table {
 
 @DriftDatabase(tables: [Entries])
 class AppDb extends _$AppDb {
-  AppDb() : super(_openConnection());
+  AppDb() : super(openConnection());
 
   /// Test-only / override constructor.
   AppDb.forTesting(super.executor);
@@ -131,12 +128,4 @@ class AppDb extends _$AppDb {
   Future<int> deleteEntryById(String id) {
     return (delete(entries)..where((t) => t.id.equals(id))).go();
   }
-}
-
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dir = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dir.path, 'app.db'));
-    return NativeDatabase.createInBackground(file);
-  });
 }
