@@ -5,18 +5,45 @@ import 'package:intl/intl.dart';
 import 'package:mobile/app/providers.dart';
 import 'package:mobile/domain/entry.dart';
 
-class EntryListPage extends ConsumerWidget {
+class EntryListPage extends ConsumerStatefulWidget {
   const EntryListPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EntryListPage> createState() => _EntryListPageState();
+}
+
+class _EntryListPageState extends ConsumerState<EntryListPage> {
+  bool _searching = false;
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
     final repo = ref.watch(entryRepositoryProvider);
     final df = DateFormat('MMM d, yyyy');
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Entries'),
+        title: _searching
+            ? TextField(
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search…',
+                  border: InputBorder.none,
+                ),
+                onChanged: (v) => setState(() => _query = v),
+              )
+            : const Text('Entries'),
         actions: [
+          IconButton(
+            tooltip: _searching ? 'Close search' : 'Search',
+            onPressed: () {
+              setState(() {
+                _searching = !_searching;
+                if (!_searching) _query = '';
+              });
+            },
+            icon: Icon(_searching ? Icons.close : Icons.search),
+          ),
           IconButton(
             tooltip: 'Calendar',
             onPressed: () => context.go('/calendar'),
@@ -29,7 +56,7 @@ class EntryListPage extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
       body: StreamBuilder<List<Entry>>(
-        stream: repo.watchAll(),
+        stream: repo.watchAll(query: _query),
         builder: (context, snap) {
           if (!snap.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -76,12 +103,24 @@ class EntryListPage extends ConsumerWidget {
                   );
                 },
                 child: ListTile(
+                  leading: e.pinned
+                      ? const Icon(Icons.push_pin, size: 18)
+                      : null,
                   title: Text(
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   subtitle: Text(subtitle),
+                  trailing: e.mood == null
+                      ? null
+                      : Text(
+                          ['Low', 'OK', 'High'][e.mood!.clamp(0, 2)],
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelSmall
+                              ?.copyWith(color: Theme.of(context).hintColor),
+                        ),
                   onTap: () => context.go('/entry/${e.id}'),
                 ),
               );
