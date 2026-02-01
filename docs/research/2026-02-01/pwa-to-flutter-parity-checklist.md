@@ -10,17 +10,17 @@ Target app: `apps/mobile` (Flutter mobile-first).
 
 ## Core entry
 - ✅ Create/edit entries (title, datetime, text) — implemented (CRUD flow)
-- ❌ Mood (3-level)
-- ❌ Tags
+- ✅ Mood (3-level)
+- ✅ Tags
 - ❌ Location attach/edit
-- ❌ Pin/unpin entries
-- ❌ Tasks: mark as task + done
+- ✅ Pin/unpin entries
+- ✅ Tasks: mark as task + done
 
 ## Browsing & organization
-- ❌ Search by text
+- ✅ Search by text (title/body)
 - ❌ Filter by mood
 - ❌ Sort by date/title
-- 🟡 Calendar navigation (dependency added; UI not complete)
+- ✅ Calendar navigation (month → day → entries)
 - ❌ Quick tag filters / saved filters
 
 ## Stats & habit features

@@ -5,20 +5,20 @@
 - **DB decision:** Drift (SQLite).
 
 ## Shipped (main)
-- Added `table_calendar` and implemented **Calendar MVP**:
-  - Month view w/ heat + dots
-  - Tap day → day entries list → create/edit
-- Extended Drift schema for calendar/day browsing:
-  - `dayKey` column (yyyy-MM-dd)
-  - day-scoped queries + month day-counts
-- Added delete UX improvements:
-  - Swipe-to-delete on list w/ **Undo snackbar**
-  - Delete on detail w/ **Undo snackbar**
-- Improved empty state copy.
+### Parity chunk A (mood + tags + tasks + pin + search)
+- Added Entry parity fields:
+  - Mood (3-level)
+  - Tags
+  - Tasks (checklist)
+  - Pin/unpin
+- Added search (title/body) on entry list.
+- Persisted everything locally via Drift schema v3.
+
+### Calendar MVP + delete undo
+- Month calendar w/ heat + dots → day entries list → create/edit.
+- Delete with Undo snackbar (list swipe + detail delete).
 - `flutter test` passes.
 
-## Next
-- Calendar MVP polishing:
-  - make day list open detail (not editor) and add an Edit affordance
-  - better heat scaling / markers
-- Editor UX: autosave, title-from-body heuristics.
+## Next (parity-gated)
+- Chunk B: calendar day flow polish (day list → detail → edit; return path).
+- Chunk C: habit loop.
