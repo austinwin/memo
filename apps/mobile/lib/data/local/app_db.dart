@@ -23,6 +23,9 @@ class Entries extends Table {
 class AppDb extends _$AppDb {
   AppDb() : super(_openConnection());
 
+  /// Test-only / override constructor.
+  AppDb.forTesting(super.executor);
+
   @override
   int get schemaVersion => 1;
 
