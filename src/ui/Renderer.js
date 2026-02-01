@@ -133,6 +133,11 @@ export const Renderer = {
       actionsEl.insertBefore(locIcon, actionsEl.firstChild);
     }
 
+    // Card click opens detail (but ignore clicks on interactive controls)
+    node.addEventListener('click', () => {
+      if (callbacks.onOpenDetail) callbacks.onOpenDetail(memo.id);
+    });
+
     if (pinBtn) {
       pinBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -145,6 +150,11 @@ export const Renderer = {
             e.stopPropagation();
             if (callbacks.onEdit) callbacks.onEdit(memo.id);
         });
+    }
+
+    // Stop propagation from the todo checkbox so it doesn't open the detail view.
+    if (todoCheckbox) {
+      todoCheckbox.addEventListener('click', (e) => e.stopPropagation());
     }
     
     if (deleteBtn) {
