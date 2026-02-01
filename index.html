@@ -58,6 +58,10 @@
           Entry
           <textarea id="text" name="text" rows="5" required placeholder="Write about your day, thoughts, or anything you want to remember..."></textarea>
         </label>
+        <label>
+          Tags
+          <input type="text" id="tagsInput" name="tags" placeholder="marketing, product, ops" />
+        </label>
         <div class="todo-toggle">
           <span class="todo-toggle-label">Track as Task</span>
           <span class="todo-toggle-help">Treat this memo as a to-do you want to track.</span>
@@ -115,6 +119,9 @@
             <option value="great">Mood: 😊</option>
             <option value="ok">Mood: 😐</option>
             <option value="bad">Mood: 😞</option>
+          </select>
+          <select id="tagFilterSelect" class="filter-select" aria-label="Filter by tag">
+            <option value="all">Tag: All</option>
           </select>
           <select id="sortSelect" class="filter-select" aria-label="Sort entries">
             <option value="newest">Newest</option>
@@ -289,6 +296,7 @@
         </div>
       </header>
       <p class="memo-text"></p>
+      <div class="memo-tags" aria-label="Tags"></div>
     </article>
   </template>
 

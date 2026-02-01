@@ -16,6 +16,7 @@ const state = {
   view: {
     activeTab: 'all', // 'all', 'today', 'pinned', 'tasks', 'map'
     activeMoodFilter: 'all',
+    activeTagFilter: 'all',
     searchQuery: '',
     currentPage: 1,
   },
@@ -49,12 +50,14 @@ const elements = {
   viewSelect: document.getElementById('viewSelect'),
   moodSelect: document.getElementById('moodSelect'),
   mapMoodSelect: document.getElementById('mapMoodSelect'),
+  tagFilterSelect: document.getElementById('tagFilterSelect'),
   
   // Form
   memoForm: document.getElementById('memoForm'),
   titleInput: document.getElementById('title'),
   datetimeInput: document.getElementById('datetime'),
   textInput: document.getElementById('text'),
+  tagsInput: document.getElementById('tagsInput'),
   isTodoInput: document.getElementById('isTodo'),
   formCloseBtn: document.getElementById('formCloseBtn'),
   locationSymbolInput: document.getElementById('locationSymbolInput'),
@@ -175,6 +178,10 @@ function startEditMemo(id) {
   elements.datetimeInput.value = `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(local.getDate())}T${pad(local.getHours())}:${pad(local.getMinutes())}`;
   
   elements.textInput.value = memo.text || '';
+  if (elements.tagsInput) {
+    const tags = Array.isArray(memo.tags) ? memo.tags : [];
+    elements.tagsInput.value = tags.join(', ');
+  }
   if (elements.isTodoInput) elements.isTodoInput.checked = !!memo.isTodo;
   if (elements.locationSymbolInput && memo.location?.symbol) {
       elements.locationSymbolInput.value = memo.location.symbol;
@@ -240,6 +247,9 @@ function resetForm() {
     state.editing.id = null;
     state.editing.location = null;
     elements.memoForm.reset();
+    if (elements.tagsInput) {
+      elements.tagsInput.value = '';
+    }
     MapManager.setCurrentEditingLocation(null);
     if(elements.locationSymbolInput) elements.locationSymbolInput.value = '📍';
 }
@@ -281,6 +291,9 @@ function render() {
   if (elements.mapMoodSelect && elements.mapMoodSelect.value !== state.view.activeMoodFilter) {
     elements.mapMoodSelect.value = state.view.activeMoodFilter;
   }
+  if (elements.tagFilterSelect && elements.tagFilterSelect.value !== state.view.activeTagFilter) {
+    elements.tagFilterSelect.value = state.view.activeTagFilter;
+  }
   if (elements.mapTimelineBar) {
     elements.mapTimelineBar.hidden = !state.map.timelineEnabled;
   }
@@ -304,6 +317,7 @@ function render() {
   const filtered = MemoManager.filterMemos(state.memos, {
     tab: state.view.activeTab,
     mood: state.view.activeMoodFilter,
+    tag: state.view.activeTagFilter,
     query: state.view.searchQuery
   });
   
@@ -429,6 +443,11 @@ function bindEvents() {
         const moodRadio = elements.memoForm.querySelector('input[name="mood"]:checked');
         const mood = moodRadio ? moodRadio.value : null;
         const isTodo = elements.isTodoInput?.checked || false;
+        const tagsRaw = elements.tagsInput ? elements.tagsInput.value : '';
+        const tags = tagsRaw
+          .split(',')
+          .map((t) => t.trim().toLowerCase())
+          .filter(Boolean);
         
         const newItem = {
             id: state.editing.id || Date.now(),
@@ -441,6 +460,7 @@ function bindEvents() {
             isTodo,
             isDone: state.editing.id ? (state.memos.find(m=>m.id === state.editing.id)?.isDone) : false,
             isPinned: state.editing.id ? (state.memos.find(m=>m.id === state.editing.id)?.isPinned) : false,
+            tags,
         };
         
         // Fix datetime to ISO if needed
@@ -502,6 +522,12 @@ function bindEvents() {
 
     elements.moodSelect?.addEventListener('change', (e) => {
         state.view.activeMoodFilter = e.target.value;
+        state.view.currentPage = 1;
+        render();
+    });
+    
+    elements.tagFilterSelect?.addEventListener('change', (e) => {
+        state.view.activeTagFilter = e.target.value || 'all';
         state.view.currentPage = 1;
         render();
     });

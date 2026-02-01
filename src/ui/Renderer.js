@@ -60,6 +60,7 @@ export const Renderer = {
     const titleEl = node.querySelector('.memo-title');
     const datetimeEl = node.querySelector('.memo-datetime');
     const textEl = node.querySelector('.memo-text');
+    const tagsEl = node.querySelector('.memo-tags');
     const moodEl = node.querySelector('.memo-mood');
     const pinBtn = node.querySelector('.pin-btn');
     const actionsEl = node.querySelector('.memo-card-actions');
@@ -101,6 +102,17 @@ export const Renderer = {
     }
     
     if (textEl) textEl.textContent = memo.text || '';
+
+    if (tagsEl) {
+      tagsEl.innerHTML = '';
+      const tags = Array.isArray(memo.tags) ? memo.tags : [];
+      for (const tag of tags) {
+        const chip = document.createElement('span');
+        chip.className = 'memo-tag';
+        chip.textContent = `#${tag}`;
+        tagsEl.appendChild(chip);
+      }
+    }
 
     if (moodEl) {
       if (memo.mood === 'great') moodEl.textContent = '😊';

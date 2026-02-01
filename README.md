@@ -7,6 +7,7 @@ A minimal, offline-first memo diary Progressive Web App (PWA).
 - 📝 **Create & Edit Memos**: Title, date/time, text, mood, location, and task status
 - 📌 **Pin Important Entries**: Pin/unpin memos for quick access
 - ✅ **Task Tracking**: Mark memos as tasks, check off when done, view open tasks
+- 🏷️ **Tags**: Add lightweight tags to entries and filter your log by tag (e.g. marketing, product, ops)
 - 📅 **Writing Stats**: Streak, last entry, week count, word counts, daily goal progress
 - 🎯 **Daily Goal**: Set a daily writing goal and see progress
 - 🔍 **Search & Filter**: Search by text, filter by mood, sort by date/title

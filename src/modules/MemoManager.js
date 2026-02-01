@@ -42,7 +42,7 @@ export const MemoManager = {
     return sorted;
   },
 
-  filterMemos(list, { tab = 'all', mood = 'all', query = '' } = {}) {
+  filterMemos(list, { tab = 'all', mood = 'all', tag = 'all', query = '' } = {}) {
     // 1. Filter by Tab
     let filtered = list;
     if (tab === 'pinned') {
@@ -61,13 +61,23 @@ export const MemoManager = {
       filtered = filtered.filter((memo) => (memo.mood || null) === mood);
     }
 
-    // 3. Filter by Search Query
+    // 3. Filter by Tag
+    if (tag !== 'all') {
+      filtered = filtered.filter((memo) => {
+        const tags = Array.isArray(memo.tags) ? memo.tags : [];
+        return tags.includes(tag);
+      });
+    }
+
+    // 4. Filter by Search Query (title, text, or tags)
     const normalizedQuery = (query || '').trim().toLowerCase();
     if (normalizedQuery) {
       filtered = filtered.filter((memo) => {
         const inTitle = (memo.title || '').toLowerCase().includes(normalizedQuery);
         const inText = (memo.text || '').toLowerCase().includes(normalizedQuery);
-        return inTitle || inText;
+        const tags = Array.isArray(memo.tags) ? memo.tags : [];
+        const inTags = tags.some((t) => t.includes(normalizedQuery));
+        return inTitle || inText || inTags;
       });
     }
 
