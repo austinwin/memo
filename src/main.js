@@ -4,6 +4,7 @@ import { MemoManager } from './modules/MemoManager.js';
 import { MapManager } from './modules/MapManager.js';
 import { Renderer } from './ui/Renderer.js';
 import { initToast, showToast, updateHeaderHeight } from './ui/Toast.js';
+import { TagFilters } from './ui/TagFilters.js';
 import { PWA } from './modules/PWA.js';
 import { isMobileView } from './utils/helpers.js';
 import { getDayKey } from './utils/date.js';
@@ -52,6 +53,7 @@ const elements = {
   moodSelect: document.getElementById('moodSelect'),
   mapMoodSelect: document.getElementById('mapMoodSelect'),
   tagFilterSelect: document.getElementById('tagFilterSelect'),
+  tagQuickFilters: document.getElementById('tagQuickFilters'),
   
   // Form
   memoForm: document.getElementById('memoForm'),
@@ -300,6 +302,19 @@ function render() {
   if (elements.tagFilterSelect && elements.tagFilterSelect.value !== state.view.activeTagFilter) {
     elements.tagFilterSelect.value = state.view.activeTagFilter;
   }
+
+  // Keep tag filters (select + quick chips) in sync with stored memos
+  TagFilters.updateTagFilters({
+    selectEl: elements.tagFilterSelect,
+    chipsContainer: elements.tagQuickFilters,
+    memos: state.memos,
+    activeTag: state.view.activeTagFilter,
+    onTagSelected: (tag) => {
+      state.view.activeTagFilter = tag || 'all';
+      state.view.currentPage = 1;
+      render();
+    },
+  });
   if (elements.mapTimelineBar) {
     elements.mapTimelineBar.hidden = !state.map.timelineEnabled;
   }
