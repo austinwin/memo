@@ -6,9 +6,10 @@ import 'package:mobile/domain/entry.dart';
 import 'package:uuid/uuid.dart';
 
 class EntryEditorPage extends ConsumerStatefulWidget {
-  const EntryEditorPage({super.key, required this.entryId});
+  const EntryEditorPage({super.key, required this.entryId, this.dayKeyParam});
 
   final String? entryId;
+  final String? dayKeyParam;
 
   @override
   ConsumerState<EntryEditorPage> createState() => _EntryEditorPageState();
@@ -39,6 +40,26 @@ class _EntryEditorPageState extends ConsumerState<EntryEditorPage> {
     setState(() => _loading = false);
   }
 
+  DateTime _createdAtForNewEntry(DateTime now) {
+    final k = widget.dayKeyParam;
+    if (k == null || k.isEmpty) return now;
+
+    final parts = k.split('-');
+    if (parts.length != 3) return now;
+
+    // Keep time-of-day as now, but lock date to the selected day.
+    return DateTime(
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+      int.parse(parts[2]),
+      now.hour,
+      now.minute,
+      now.second,
+      now.millisecond,
+      now.microsecond,
+    );
+  }
+
   Future<void> _save() async {
     final repo = ref.read(entryRepositoryProvider);
     final now = DateTime.now();
@@ -51,7 +72,7 @@ class _EntryEditorPageState extends ConsumerState<EntryEditorPage> {
             id: const Uuid().v7(),
             title: title,
             body: body,
-            createdAt: now,
+            createdAt: _createdAtForNewEntry(now),
             updatedAt: now,
           )
         : _existing!.copyWith(title: title, body: body, updatedAt: now);

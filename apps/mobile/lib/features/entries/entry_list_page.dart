@@ -14,7 +14,16 @@ class EntryListPage extends ConsumerWidget {
     final df = DateFormat('MMM d, yyyy');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Entries')),
+      appBar: AppBar(
+        title: const Text('Entries'),
+        actions: [
+          IconButton(
+            tooltip: 'Calendar',
+            onPressed: () => context.go('/calendar'),
+            icon: const Icon(Icons.calendar_month),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.go('/new'),
         child: const Icon(Icons.add),
